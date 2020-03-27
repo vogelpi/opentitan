@@ -5,6 +5,7 @@
 
 import os
 import sys
+sys.sys.setrecursionlimit(1500)
 
 # Make vendored packages available in the search path.
 sys.path.append(os.path.join(os.path.dirname(__file__), 'vendor'))
