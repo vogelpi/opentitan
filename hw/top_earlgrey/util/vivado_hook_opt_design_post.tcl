@@ -14,3 +14,6 @@ if {[catch [get_cells -hierarchical -filter { NAME =~  "*u_rom_ctrl*u_rom*rdata_
 } else {
   send_msg "Designcheck 2-3" ERROR "BRAM implementation not found for Boot ROM."
 }
+
+# Force replication of some high fanout nets.
+set_property -name {FORCE_MAX_FANOUT} -value {400} -objects [get_nets {top_earlgrey/u_otbn/u_imem/u_prim_ram_1p_adv/u_mem/gen_generic.u_impl_generic/rf_bignum_wr_addr[*]}]
