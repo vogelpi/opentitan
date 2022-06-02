@@ -202,7 +202,7 @@ void AESTLULInterface::DriveSignals() {
   // d_ready   - 1   - [0]       - [0][0]
 
   // a_user.instr_type = False (Data)
-  uint8_t tl_type = 0x5;
+  uint8_t tl_type = 0x9;
 
   // generate cmd integrity data, see also
   // - hw/ip/tlul/rtl/tlul_pkg.sv
