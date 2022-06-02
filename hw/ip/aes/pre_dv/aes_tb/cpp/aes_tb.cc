@@ -15,7 +15,7 @@
 
 #include "sim_ctrl_extension.h"
 
-#define CHECK_MODEL 1
+#define CHECK_MODEL 0
 
 class AESSim : public SimCtrlExtension {
   using SimCtrlExtension::SimCtrlExtension;

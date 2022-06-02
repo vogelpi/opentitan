@@ -11,6 +11,7 @@ filesets:
       - lowrisc:dv:aes_model_dpi
     files:
       - rtl/aes_sim.sv
+      - rtl/aes_cipher_core.pre_map.v
     file_type: systemVerilogSource
 
   files_dv_verilator:
