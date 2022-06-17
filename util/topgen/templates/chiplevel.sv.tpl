@@ -1198,7 +1198,7 @@ module chip_${top["name"]}_${target["name"]} (
   // Note that GPIO[11:8] are connected to LED[3:0] on the CW310.
   // On the CW305, GPIO[9,8] are connected to LED[5,7].
 
-  prim_mubi_pkg::mubi4_t clk_trans_idle, manual_in_io_clk_idle;
+  prim_mubi_pkg::mubi4_t clk_trans_idle, clk_main_idle, manual_in_io_clk_idle;
 
   % if target["name"] == "cw305":
   assign clk_trans_idle = top_${top["name"]}.clkmgr_aon_idle;
@@ -1221,13 +1221,25 @@ module chip_${top["name"]}_${target["name"]} (
   assign clk_io_div4_trigger_en = mio_out[MioOutGpioGpio8];
   assign clk_io_div4_trigger_oe = mio_oe[MioOutGpioGpio8];
 
+  logic clk_main_trigger_en, clk_main_trigger_oe;
+
+  // Synchronize signals to clk_main.
+  prim_flop_2sync #(
+    .Width ($bits(clk_trans_idle) + 2)
+  ) u_sync_trigger_clk_main (
+    .clk_i (clk_main),
+    .rst_ni(rst_n),
+    .d_i   ({clk_trans_idle, clk_io_div4_trigger_en, clk_io_div4_trigger_oe}),
+    .q_o   ({clk_main_idle,  clk_main_trigger_en,    clk_main_trigger_oe})
+  );
+
   // Synchronize signals to manual_in_io_clk.
   prim_flop_2sync #(
     .Width ($bits(clk_trans_idle) + 2)
   ) u_sync_trigger (
     .clk_i (manual_in_io_clk),
     .rst_ni(manual_in_por_n),
-    .d_i   ({clk_trans_idle,        clk_io_div4_trigger_en,      clk_io_div4_trigger_oe}),
+    .d_i   ({clk_main_idle,         clk_main_trigger_en,         clk_main_trigger_oe}),
     .q_o   ({manual_in_io_clk_idle, manual_in_io_clk_trigger_en, manual_in_io_clk_trigger_oe})
   );
 
