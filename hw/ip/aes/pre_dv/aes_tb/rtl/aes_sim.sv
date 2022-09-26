@@ -10,7 +10,7 @@ module aes_sim import aes_pkg::*;
   parameter bit          SecMasking           = 1,
   parameter sbox_impl_e  SecSBoxImpl          = SBoxImplDom,
   parameter int unsigned SecStartTriggerDelay = 40,
-  parameter bit          SecAllowForcingMasks = 0,
+  parameter bit          SecAllowForcingMasks = 1,
   parameter bit          SecSkipPRNGReseeding = 0
 ) (
   input                     clk_i,
