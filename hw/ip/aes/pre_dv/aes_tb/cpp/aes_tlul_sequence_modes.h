@@ -4,6 +4,7 @@
 
 #define PRNG_RESEED_RATE 0x2
 #define FORCE_ZERO_MASKS 0
+#define KEY_TOUCH_FORCES_RESEED 0
 #define FEED_INPUT_WHILE_BUSY 1
 #define TEST_STALL 1
 
@@ -59,7 +60,7 @@ static void aes_tlul_sequence_modes_gen(int *i_transaction, int *i_exp_resp,
       true};
   i_trx++;
 
-  // confrim config
+  // confirm config
   tl_i_transactions[i_trx] = {
       true,
       0,
@@ -72,6 +73,34 @@ static void aes_tlul_sequence_modes_gen(int *i_transaction, int *i_exp_resp,
           PRNG_RESEED_RATE << AES_CTRL_PRNG_RESEED_RATE_OFFSET |
           (key_len_bits << AES_CTRL_KEY_LEN_OFFSET) |
           (mode << AES_CTRL_MODE_OFFSET) | (unsigned)op,
+      0,
+      true};
+  i_trx++;
+
+  // write aux config
+  tl_i_transactions[i_trx] = {
+      true,
+      0,
+      0,
+      2,
+      0,
+      AES_AUX_CONFIG,
+      0xF,
+      KEY_TOUCH_FORCES_RESEED << AES_CTRL_AUX_KEY_TOUCH_FORCES_RESEED_OFFSET,
+      0,
+      true};
+  i_trx++;
+
+  // confirm aux config
+  tl_i_transactions[i_trx] = {
+      true,
+      0,
+      0,
+      2,
+      0,
+      AES_AUX_CONFIG,
+      0xF,
+      KEY_TOUCH_FORCES_RESEED << AES_CTRL_AUX_KEY_TOUCH_FORCES_RESEED_OFFSET,
       0,
       true};
   i_trx++;
@@ -201,7 +230,7 @@ int aes_tlul_sequence_modes_gen_all() {
 
   // Allocate memory
   num_transactions_max =
-      (1 + 18 + 1 + 4 + 16 + 2 + 20 + 3 * TEST_STALL) * num_groups;
+      (1 + 20 + 1 + 4 + 16 + 2 + 20 + 3 * TEST_STALL) * num_groups;
   num_responses_max = (2 + 1 + 20 + 3 * TEST_STALL) * num_groups;
   tl_i_transactions = (TLI *)malloc(num_transactions_max * sizeof(TLI));
   if (tl_i_transactions == NULL) {
