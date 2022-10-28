@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #define PRNG_RESEED_RATE 0x2
-#define FORCE_ZERO_MASKS 0
+#define FORCE_MASKS 0
 #define KEY_TOUCH_FORCES_RESEED 0
 #define FEED_INPUT_WHILE_BUSY 1
 #define TEST_STALL 1
@@ -52,8 +52,7 @@ static void aes_tlul_sequence_modes_gen(int *i_transaction, int *i_exp_resp,
       0,
       AES_CONFIG,
       0xF,
-      FORCE_ZERO_MASKS << AES_CTRL_FORCE_ZERO_MASKS_OFFSET |
-          PRNG_RESEED_RATE << AES_CTRL_PRNG_RESEED_RATE_OFFSET |
+      PRNG_RESEED_RATE << AES_CTRL_PRNG_RESEED_RATE_OFFSET |
           (key_len_bits << AES_CTRL_KEY_LEN_OFFSET) |
           (mode << AES_CTRL_MODE_OFFSET) | (unsigned)op,
       0,
@@ -69,8 +68,7 @@ static void aes_tlul_sequence_modes_gen(int *i_transaction, int *i_exp_resp,
       0,
       AES_CONFIG,
       0xF,
-      FORCE_ZERO_MASKS << AES_CTRL_FORCE_ZERO_MASKS_OFFSET |
-          PRNG_RESEED_RATE << AES_CTRL_PRNG_RESEED_RATE_OFFSET |
+      PRNG_RESEED_RATE << AES_CTRL_PRNG_RESEED_RATE_OFFSET |
           (key_len_bits << AES_CTRL_KEY_LEN_OFFSET) |
           (mode << AES_CTRL_MODE_OFFSET) | (unsigned)op,
       0,
@@ -86,7 +84,8 @@ static void aes_tlul_sequence_modes_gen(int *i_transaction, int *i_exp_resp,
       0,
       AES_AUX_CONFIG,
       0xF,
-      KEY_TOUCH_FORCES_RESEED << AES_CTRL_AUX_KEY_TOUCH_FORCES_RESEED_OFFSET,
+      FORCE_MASKS << AES_CTRL_AUX_FORCE_MASKS_OFFSET |
+          KEY_TOUCH_FORCES_RESEED << AES_CTRL_AUX_KEY_TOUCH_FORCES_RESEED_OFFSET,
       0,
       true};
   i_trx++;
@@ -100,7 +99,8 @@ static void aes_tlul_sequence_modes_gen(int *i_transaction, int *i_exp_resp,
       0,
       AES_AUX_CONFIG,
       0xF,
-      KEY_TOUCH_FORCES_RESEED << AES_CTRL_AUX_KEY_TOUCH_FORCES_RESEED_OFFSET,
+      FORCE_MASKS << AES_CTRL_AUX_FORCE_MASKS_OFFSET |
+          KEY_TOUCH_FORCES_RESEED << AES_CTRL_AUX_KEY_TOUCH_FORCES_RESEED_OFFSET,
       0,
       true};
   i_trx++;
