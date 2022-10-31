@@ -208,7 +208,7 @@ def verilator_params(
         tags = required_tags + tags,
         test_runner = test_runner,
         test_cmds = required_test_cmds + test_cmds,
-        timeout = timeout,
+        timeout = "eternal",
     )
     return kwargs
 
