@@ -1070,10 +1070,10 @@ module otbn
   assign init_sec_wipe_done_d = init_sec_wipe_done_q | ~busy_secure_wipe;
 
   otbn_core #(
-    .RegFile(RegFile),
-    .DmemSizeByte(DmemSizeByte),
-    .ImemSizeByte(ImemSizeByte),
-    .RndCnstUrndPrngSeed(RndCnstUrndPrngSeed)
+  //  .RegFile(RegFile),
+  //  .DmemSizeByte(DmemSizeByte),
+  //  .ImemSizeByte(ImemSizeByte),
+  //  .RndCnstUrndPrngSeed(RndCnstUrndPrngSeed)
   ) u_otbn_core (
     .clk_i,
     .rst_ni                      (rst_n),

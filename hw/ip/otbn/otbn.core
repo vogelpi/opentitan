@@ -41,7 +41,8 @@ filesets:
       - rtl/otbn_stack.sv
       - rtl/otbn_rnd.sv
       - rtl/otbn_start_stop_control.sv
-      - rtl/otbn_core.sv
+      #- rtl/otbn_core.sv
+      - rtl/otbn_core.pre_map.v
     file_type: systemVerilogSource
 
   files_rtl_top:
