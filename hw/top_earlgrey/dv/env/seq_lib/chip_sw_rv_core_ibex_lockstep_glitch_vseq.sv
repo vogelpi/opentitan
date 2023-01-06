@@ -528,6 +528,10 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
         $assertoff(0, "tb.dut.top_earlgrey.u_rv_core_ibex.u_core.gen_lockstep.u_ibex_lockstep");
       end else begin
         $assertoff(0, "tb.dut.top_earlgrey.u_rv_core_ibex.u_core.u_ibex_core");
+        // Glitching data_rvalid_i can mess up the pending access tracking inside ibex_top.
+        if (port_name == "data_rvalid_i") begin
+          $assertoff(0, "tb.dut.top_earlgrey.u_rv_core_ibex.u_core");
+        end
       end
     end
 
