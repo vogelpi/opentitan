@@ -14,7 +14,7 @@ From the OpenTitan top level:
 
    ```sh
    fusesoc --cores-root=. run --setup --build lowrisc:dv_verilator:aes_sim
-   ./build/lowrisc_dv_verilator_aes_sim_0.6/default-verilator/Vaes_sim --trace
+   ./build/lowrisc_dv_verilator_aes_sim_0.1/default-verilator/Vaes_sim --trace
    ```
 
 Details of the testbench
