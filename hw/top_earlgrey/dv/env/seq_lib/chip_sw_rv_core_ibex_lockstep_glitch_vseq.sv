@@ -426,6 +426,11 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
             #1step;
             glitched_inp_used = (instr_open_cnt[glitch_lockstep_core] > 0);
             @(cfg.chip_vif.cpu_clk_rst_if.cbn);
+            // Instruction integrity and bus errors don't directly factor into
+            // `alert_major_internal` but they always have an impact, even if the core isn't
+            // currently fetching.
+            glitched_inp_used |= (hdl_read_core_signal("if_stage_i.instr_err",
+                glitch_lockstep_core, 1) == 1'b1);
           end
           "instr_rdata_i", "instr_err_i": begin
             glitched_inp_used = (hdl_read_core_signal("instr_rvalid_i", glitch_lockstep_core, 1) ==
