@@ -152,6 +152,15 @@ module aes_cipher_control_fsm import aes_pkg::*;
       CIPHER_CTRL_IDLE: begin
         cyc_ctr_d = 3'd0;
 
+        // Control state and full key register muxes. Note that from an SCA point of view, it is
+        // of advantage to drive these signals whenever idle to avoid potential SCA leakage upon
+        // loading the initial state and initial full key.
+        state_sel_o    = dec_key_gen_i ? STATE_CLEAR : STATE_INIT;
+        key_full_sel_o = dec_key_gen_i ? KEY_FULL_ENC_INIT :
+                    (op_i == CIPH_FWD) ? KEY_FULL_ENC_INIT :
+                    (op_i == CIPH_INV) ? KEY_FULL_DEC_INIT :
+                                         KEY_FULL_ENC_INIT;
+
         // Signal that we are ready, wait for handshake.
         in_ready_o = 1'b1;
         if (in_valid_i) begin
@@ -180,7 +189,6 @@ module aes_cipher_control_fsm import aes_pkg::*;
             prng_reseed_d_o = SecMasking & prng_reseed_i;
 
             // Load input data to state
-            state_sel_o = dec_key_gen_i ? STATE_CLEAR : STATE_INIT;
             state_we_o  = 1'b1;
 
             // Make the masking PRNG advance. The current pseudo-random data is used to mask the
@@ -191,10 +199,6 @@ module aes_cipher_control_fsm import aes_pkg::*;
             key_expand_clear_o = 1'b1;
 
             // Load full key
-            key_full_sel_o = dec_key_gen_i ? KEY_FULL_ENC_INIT :
-                        (op_i == CIPH_FWD) ? KEY_FULL_ENC_INIT :
-                        (op_i == CIPH_INV) ? KEY_FULL_DEC_INIT :
-                                             KEY_FULL_ENC_INIT;
             key_full_we_o  = 1'b1;
 
             // Load num_rounds, initialize round counter.
