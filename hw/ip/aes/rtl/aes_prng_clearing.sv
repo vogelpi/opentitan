@@ -43,7 +43,7 @@ module aes_prng_clearing import aes_pkg::*;
   logic             seed_en;
   logic [Width-1:0] seed;
   logic             lfsr_en;
-  logic [Width-1:0] lfsr_state;
+  logic [Width-1:0] lfsr_state, lfsr_state_permuted;
 
   // In the current SCA setup, we don't have sufficient resources to implement the infrastructure
   // required for PRNG reseeding (CSRNG, EDN, etc.). Therefore, we skip any reseeding requests if
@@ -133,13 +133,20 @@ module aes_prng_clearing import aes_pkg::*;
     .entropy_i (         '0 ),
     .state_o   ( lfsr_state )
   );
-  assign data_o[0] = lfsr_state;
 
-  // A seperate permutation is applied to obtain the pseudo-random data for clearing the second
-  // share of registers (e.g. key registers or state registers in case masking is enabled).
+  // To clear both shares of the key register (and the state registers in case masking is enabled),
+  // with independent pseudo-random data, the LFSR output is split into two parts:
+  // - The LSBs of Share 0 get the lower part of the LFSR output, and
+  // - the LSBs of Share 1 get the upper part of the LFSR output.
+  // For the MSBs, the same procedure is repeated with a linear permuation being applied to the
+  // LFSR output first.
   for (genvar i = 0; i < Width; i++) begin : gen_share_perm
-    assign data_o[1][i] = lfsr_state[RndCnstSharePerm[i]];
+    assign lfsr_state_permuted[i] = lfsr_state[RndCnstSharePerm[i]];
   end
+  assign data_o[0] = {lfsr_state_permuted[Width / 2 - 1 : 0],
+                      lfsr_state         [Width / 2 - 1 : 0]};
+  assign data_o[1] = {lfsr_state_permuted[Width - 1 : Width / 2],
+                      lfsr_state         [Width - 1 : Width / 2]};
 
   // Width must be 64.
   `ASSERT_INIT(AesPrngWidth, Width == 64)
