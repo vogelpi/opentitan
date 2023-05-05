@@ -214,6 +214,43 @@ module aes_key_expand import aes_pkg::*;
   logic [3:0][WidthPRDSBox+19:0] in_prd;
   logic [3:0]             [19:0] out_prd;
 
+  logic [31:0] data_in, mask_in, prd_in;
+  logic [31:0] data_in_q, mask_in_q, prd_in_q;
+  logic        data_new, mask_new, prd_new, one_new;
+  assign data_in = {
+      gen_sbox[3].u_aes_sbox_i.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.data_i,
+      gen_sbox[2].u_aes_sbox_i.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.data_i,
+      gen_sbox[1].u_aes_sbox_i.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.data_i,
+      gen_sbox[0].u_aes_sbox_i.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.data_i
+  };
+  assign mask_in = {
+      gen_sbox[3].u_aes_sbox_i.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.mask_i,
+      gen_sbox[2].u_aes_sbox_i.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.mask_i,
+      gen_sbox[1].u_aes_sbox_i.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.mask_i,
+      gen_sbox[0].u_aes_sbox_i.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.mask_i
+  };
+  assign prd_in = {
+      gen_sbox[3].u_aes_sbox_i.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.in_prd.prd_1,
+      gen_sbox[2].u_aes_sbox_i.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.in_prd.prd_1,
+      gen_sbox[1].u_aes_sbox_i.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.in_prd.prd_1,
+      gen_sbox[0].u_aes_sbox_i.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.in_prd.prd_1
+  };
+  always_ff @(posedge clk_i or negedge rst_ni) begin : reg_sbox_in
+    if (!rst_ni) begin
+      data_in_q <= '0;
+      mask_in_q <= '0;
+      prd_in_q  <= '0;
+    end else begin
+      data_in_q <= data_in;
+      mask_in_q <= mask_in;
+      prd_in_q  <= prd_in;
+    end
+  end
+  assign data_new = data_in != data_in_q;
+  assign mask_new = mask_in != mask_in_q;
+  assign prd_new  = prd_in != prd_in_q;
+  assign one_new  = (data_new | mask_new) ^ prd_new;
+
   // Make sure that whenever the data/mask inputs of the S-Boxes update, the internally buffered
   // PRD is updated in sync. There are two special cases we need to handle here:
   // - For AES-256, the initial round is short (no round key computation). But the data/mask inputs

@@ -368,6 +368,79 @@ module aes_cipher_core import aes_pkg::*;
   // PRD is updated in sync.
   assign sub_bytes_prd_we = (state_we == SP2V_HIGH) ? 1'b1 : 1'b0;
 
+  logic [127:0] data_in, mask_in, prd_in;
+  logic [127:0] data_in_q, mask_in_q, prd_in_q;
+  logic         data_new, mask_new, prd_new, one_new;
+  assign data_in = {
+      u_aes_sub_bytes.gen_sbox_j[3].gen_sbox_i[3].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.data_i,
+      u_aes_sub_bytes.gen_sbox_j[3].gen_sbox_i[2].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.data_i,
+      u_aes_sub_bytes.gen_sbox_j[3].gen_sbox_i[1].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.data_i,
+      u_aes_sub_bytes.gen_sbox_j[3].gen_sbox_i[0].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.data_i,
+      u_aes_sub_bytes.gen_sbox_j[2].gen_sbox_i[3].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.data_i,
+      u_aes_sub_bytes.gen_sbox_j[2].gen_sbox_i[2].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.data_i,
+      u_aes_sub_bytes.gen_sbox_j[2].gen_sbox_i[1].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.data_i,
+      u_aes_sub_bytes.gen_sbox_j[2].gen_sbox_i[0].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.data_i,
+      u_aes_sub_bytes.gen_sbox_j[1].gen_sbox_i[3].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.data_i,
+      u_aes_sub_bytes.gen_sbox_j[1].gen_sbox_i[2].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.data_i,
+      u_aes_sub_bytes.gen_sbox_j[1].gen_sbox_i[1].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.data_i,
+      u_aes_sub_bytes.gen_sbox_j[1].gen_sbox_i[0].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.data_i,
+      u_aes_sub_bytes.gen_sbox_j[0].gen_sbox_i[3].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.data_i,
+      u_aes_sub_bytes.gen_sbox_j[0].gen_sbox_i[2].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.data_i,
+      u_aes_sub_bytes.gen_sbox_j[0].gen_sbox_i[1].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.data_i,
+      u_aes_sub_bytes.gen_sbox_j[0].gen_sbox_i[0].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.data_i
+  };
+  assign mask_in = {
+      u_aes_sub_bytes.gen_sbox_j[3].gen_sbox_i[3].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.mask_i,
+      u_aes_sub_bytes.gen_sbox_j[3].gen_sbox_i[2].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.mask_i,
+      u_aes_sub_bytes.gen_sbox_j[3].gen_sbox_i[1].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.mask_i,
+      u_aes_sub_bytes.gen_sbox_j[3].gen_sbox_i[0].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.mask_i,
+      u_aes_sub_bytes.gen_sbox_j[2].gen_sbox_i[3].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.mask_i,
+      u_aes_sub_bytes.gen_sbox_j[2].gen_sbox_i[2].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.mask_i,
+      u_aes_sub_bytes.gen_sbox_j[2].gen_sbox_i[1].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.mask_i,
+      u_aes_sub_bytes.gen_sbox_j[2].gen_sbox_i[0].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.mask_i,
+      u_aes_sub_bytes.gen_sbox_j[1].gen_sbox_i[3].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.mask_i,
+      u_aes_sub_bytes.gen_sbox_j[1].gen_sbox_i[2].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.mask_i,
+      u_aes_sub_bytes.gen_sbox_j[1].gen_sbox_i[1].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.mask_i,
+      u_aes_sub_bytes.gen_sbox_j[1].gen_sbox_i[0].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.mask_i,
+      u_aes_sub_bytes.gen_sbox_j[0].gen_sbox_i[3].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.mask_i,
+      u_aes_sub_bytes.gen_sbox_j[0].gen_sbox_i[2].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.mask_i,
+      u_aes_sub_bytes.gen_sbox_j[0].gen_sbox_i[1].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.mask_i,
+      u_aes_sub_bytes.gen_sbox_j[0].gen_sbox_i[0].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.mask_i
+  };
+  assign prd_in = {
+      u_aes_sub_bytes.gen_sbox_j[3].gen_sbox_i[3].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.in_prd.prd_1,
+      u_aes_sub_bytes.gen_sbox_j[3].gen_sbox_i[2].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.in_prd.prd_1,
+      u_aes_sub_bytes.gen_sbox_j[3].gen_sbox_i[1].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.in_prd.prd_1,
+      u_aes_sub_bytes.gen_sbox_j[3].gen_sbox_i[0].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.in_prd.prd_1,
+      u_aes_sub_bytes.gen_sbox_j[2].gen_sbox_i[3].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.in_prd.prd_1,
+      u_aes_sub_bytes.gen_sbox_j[2].gen_sbox_i[2].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.in_prd.prd_1,
+      u_aes_sub_bytes.gen_sbox_j[2].gen_sbox_i[1].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.in_prd.prd_1,
+      u_aes_sub_bytes.gen_sbox_j[2].gen_sbox_i[0].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.in_prd.prd_1,
+      u_aes_sub_bytes.gen_sbox_j[1].gen_sbox_i[3].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.in_prd.prd_1,
+      u_aes_sub_bytes.gen_sbox_j[1].gen_sbox_i[2].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.in_prd.prd_1,
+      u_aes_sub_bytes.gen_sbox_j[1].gen_sbox_i[1].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.in_prd.prd_1,
+      u_aes_sub_bytes.gen_sbox_j[1].gen_sbox_i[0].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.in_prd.prd_1,
+      u_aes_sub_bytes.gen_sbox_j[0].gen_sbox_i[3].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.in_prd.prd_1,
+      u_aes_sub_bytes.gen_sbox_j[0].gen_sbox_i[2].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.in_prd.prd_1,
+      u_aes_sub_bytes.gen_sbox_j[0].gen_sbox_i[1].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.in_prd.prd_1,
+      u_aes_sub_bytes.gen_sbox_j[0].gen_sbox_i[0].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.in_prd.prd_1
+  };
+  always_ff @(posedge clk_i or negedge rst_ni) begin : reg_sbox_in
+    if (!rst_ni) begin
+      data_in_q <= '0;
+      mask_in_q <= '0;
+      prd_in_q  <= '0;
+    end else begin
+      data_in_q <= data_in;
+      mask_in_q <= mask_in;
+      prd_in_q  <= prd_in;
+    end
+  end
+  assign data_new = data_in != data_in_q;
+  assign mask_new = mask_in != mask_in_q;
+  assign prd_new  = prd_in != prd_in_q;
+  assign one_new  = (data_new | mask_new) ^ prd_new;
+
   // Cipher data path
   aes_sub_bytes #(
     .SecSBoxImpl ( SecSBoxImpl )
