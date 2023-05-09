@@ -984,6 +984,8 @@ module chip_earlgrey_cw340 #(
     .CsrngSBoxImpl(aes_pkg::SBoxImplLut),
     .OtpCtrlMemInitFile(OtpCtrlMemInitFile),
     .RvCoreIbexPipeLine(1),
+    .SpiHost0Stub(1'b1),
+    .SpiHost1Stub(1'b1),
     .SramCtrlRetAonInstrExec(0),
     .UsbdevRcvrWakeTimeUs(10000),
     .RomCtrlBootRomInitFile(BootRomInitFile),

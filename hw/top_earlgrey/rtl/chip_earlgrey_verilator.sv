@@ -501,6 +501,8 @@ module chip_earlgrey_verilator (
 
   top_earlgrey #(
     .PinmuxAonTargetCfg(PinmuxTargetCfg),
+    .SpiHost0Stub(1'b1),
+    .SpiHost1Stub(1'b1),
     .SramCtrlMainInstrExec(1),
     .SramCtrlRetAonInstrExec(0)
   ) top_earlgrey (
