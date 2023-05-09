@@ -1077,9 +1077,11 @@ module chip_${top["name"]}_${target["name"]} #(
     .SecOtbnMuteUrnd(1'b1),
     .SecOtbnSkipUrndReseedAtStart(1'b1),
     .OtpCtrlMemInitFile(OtpCtrlMemInitFile),
+    .RvCoreIbexPipeLine(1),
     .SramCtrlRetAonInstrExec(0),
     .UsbdevRcvrWakeTimeUs(10000),
 % elif target["name"] == "cw305":
+    .RvCoreIbexPipeLine(0),
     .SecAesMasking(1'b1),
     .SecAesSBoxImpl(aes_pkg::SBoxImplDom),
     .SecAesStartTriggerDelay(320),
@@ -1101,10 +1103,10 @@ module chip_${top["name"]}_${target["name"]} #(
     .OtbnRegFile(otbn_pkg::RegFileFPGA),
     .OtbnStub(1'b1),
     .OtpCtrlMemInitFile(OtpCtrlMemInitFile),
+    .RvCoreIbexPipeLine(1),
 % endif
     .RomCtrlBootRomInitFile(BootRomInitFile),
     .RvCoreIbexRegFile(ibex_pkg::RegFileFPGA),
-    .RvCoreIbexPipeLine(1),
     .RvCoreIbexSecureIbex(0),
     .SramCtrlMainInstrExec(1),
     .PinmuxAonTargetCfg(PinmuxTargetCfg)
