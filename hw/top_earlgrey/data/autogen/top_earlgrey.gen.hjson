@@ -2245,7 +2245,18 @@
         "0"
       ]
       param_decl: {}
-      param_list: []
+      memory: {}
+      param_list:
+      [
+        {
+          name: Stub
+          desc: Stub out the core of spi_host logic
+          type: bit
+          default: "0"
+          expose: "true"
+          name_top: SpiHost0Stub
+        }
+      ]
       inter_signal_list:
       [
         {
@@ -2304,7 +2315,18 @@
         "0"
       ]
       param_decl: {}
-      param_list: []
+      memory: {}
+      param_list:
+      [
+        {
+          name: Stub
+          desc: Stub out the core of spi_host logic
+          type: bit
+          default: "0"
+          expose: "true"
+          name_top: SpiHost1Stub
+        }
+      ]
       inter_signal_list:
       [
         {
