@@ -1084,6 +1084,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .SecAesStartTriggerDelay(320),
     .SecAesAllowForcingMasks(1'b1),
     .SecAesSkipPRNGReseeding(1'b1),
+    .SpiHost0Stub(1'b1),
     .UsbdevStub(1'b1),
 % else:
     .SecAesMasking(1'b0),
