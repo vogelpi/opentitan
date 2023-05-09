@@ -11,6 +11,7 @@
 module spi_host
   import spi_host_reg_pkg::*;
 #(
+  parameter bit Stub = 1'b0,
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
 ) (
   input              clk_i,
@@ -42,6 +43,13 @@ module spi_host
 );
 
   import spi_host_cmd_pkg::*;
+
+  logic rst_n;
+  if (Stub) begin : gen_stubbed_reset
+    assign rst_n = '0;
+  end else begin : gen_no_stubbed_reset
+    assign rst_n = rst_ni;
+  end
 
   spi_host_reg2hw_t reg2hw;
   spi_host_hw2reg_t hw2reg;
@@ -274,7 +282,7 @@ module spi_host
     .CmdDepth(CmdDepth)
   ) u_cmd_queue (
     .clk_i,
-    .rst_ni,
+    .rst_ni               (rst_n),
     .command_i            (command),
     .command_valid_i      (command_valid),
     .command_busy_o       (command_busy),
@@ -295,7 +303,9 @@ module spi_host
   logic        rx_valid;
   logic        rx_ready;
 
-  spi_host_window u_window (
+  spi_host_window #(
+    .Stub(Stub)
+  ) u_window (
     .clk_i,
     .rst_ni,
     .rx_win_i   (fifo_win_h2d[0]),
@@ -390,7 +400,7 @@ module spi_host
     .SwapBytes(~ByteOrder)
   ) u_data_fifos (
     .clk_i,
-    .rst_ni,
+    .rst_ni            (rst_n),
 
     .tx_data_i         (tx_data),
     .tx_be_i           (tx_be),
@@ -436,7 +446,7 @@ module spi_host
     .NumCS(NumCS)
   ) u_spi_core (
     .clk_i,
-    .rst_ni,
+    .rst_ni          (rst_n),
 
     .command_i       (core_command),
     .command_valid_i (core_command_valid),
@@ -569,8 +579,8 @@ module spi_host
   assign event_rx_full  = rx_full_d & ~rx_full_q;
   assign rx_full_d      = rx_full;
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
+  always_ff @(posedge clk_i or negedge rst_n) begin
+    if (!rst_n) begin
       idle_q     <= 1'b0;
       ready_q    <= 1'b0;
       tx_wm_q    <= 1'b0;
