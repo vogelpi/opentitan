@@ -37,6 +37,7 @@ filesets:
       - rtl/aes_cipher_control_fsm.sv
       - rtl/aes_cipher_control_fsm_p.sv
       - rtl/aes_cipher_control_fsm_n.sv
+      - rtl/aes_cipher_mux_full_key.sv
       - rtl/aes_sub_bytes.sv
       - rtl/aes_sbox.sv
       - rtl/aes_sbox_lut.sv

@@ -501,14 +501,15 @@ module aes_cipher_core import aes_pkg::*;
 
   // SEC_CM: KEY.SEC_WIPE
   // Full Key registers
-  always_comb begin : key_full_mux
-    unique case (key_full_sel)
-      KEY_FULL_ENC_INIT: key_full_d = key_init_i;
-      KEY_FULL_DEC_INIT: key_full_d = key_dec_q;
-      KEY_FULL_ROUND:    key_full_d = key_expand_out;
-      KEY_FULL_CLEAR:    key_full_d = prd_clearing_256;
-      default:           key_full_d = prd_clearing_256;
-    endcase
+  for (genvar s = 0; s < NumShares; s++) begin : gen_shares_mux_full_key
+    aes_cipher_mux_full_key u_aes_cipher_mux_full_key_s (
+      .key_full_sel_i     ( key_full_sel        ),
+      .key_init_i         ( key_init_i[s]       ),
+      .key_dec_i          ( key_dec_q[s]        ),
+      .key_expand_out_i   ( key_expand_out[s]   ),
+      .prd_clearing_256_i ( prd_clearing_256[s] ),
+      .key_full_o         ( key_full_d[s]       )
+    );
   end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : key_full_reg
