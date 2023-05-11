@@ -514,20 +514,23 @@ module aes_core
     logic [3:0][3:0][7:0] state_done_muxed [NumShares];
     for (genvar s = 0; s < NumShares; s++) begin : gen_state_done_muxed
       assign state_done_muxed[s] =
-          (cipher_out_valid == SP2V_HIGH) ? state_done[s] : prd_clearing_128[s];
+          (cipher_out_valid == SP2V_HIGH) ? state_done[s] : state_done_q[s];
     end
 
     // Avoid aggressive synthesis optimizations.
-    logic [3:0][3:0][7:0] state_done_buf [NumShares];
-    prim_buf #(
-      .Width ( 128 * NumShares )
-    ) u_prim_state_done_muxed (
-      .in_i  ( {state_done_muxed[1], state_done_muxed[0]} ),
-      .out_o ( {state_done_buf[1],   state_done_buf[0]}   )
+    logic [3:0][3:0][7:0] state_done_q [NumShares];
+    prim_flop #(
+      .Width      ( 128 * NumShares ),
+      .ResetValue (              '0 )
+    ) u_prim_state_done_q (
+      .clk_i  ( clk_i                                      ),
+      .rst_ni ( rst_ni                                     ),
+      .d_i    ( {state_done_muxed[1], state_done_muxed[0]} ),
+      .q_o    ( {state_done_q[1],     state_done_q[0]}     )
     );
 
     // Unmask the cipher core output.
-    assign state_out = state_done_buf[0] ^ state_done_buf[1];
+    assign state_out = state_done_q[0] ^ state_done_q[1];
   end
 
   // Mux for addition to state output
@@ -861,10 +864,19 @@ module aes_core
   // Outputs //
   /////////////
 
+  sp2v_e data_out_we_q;
+  always_ff @(posedge clk_i or negedge rst_ni) begin : data_out_we_reg
+    if (!rst_ni) begin
+      data_out_we_q <= SP2V_LOW;
+    end else begin
+      data_out_we_q <= data_out_we;
+    end
+  end
+
   always_ff @(posedge clk_i or negedge rst_ni) begin : data_out_reg
     if (!rst_ni) begin
       data_out_q <= '0;
-    end else if (data_out_we == SP2V_HIGH) begin
+    end else if (data_out_we_q == SP2V_HIGH) begin
       data_out_q <= data_out_d;
     end
   end
