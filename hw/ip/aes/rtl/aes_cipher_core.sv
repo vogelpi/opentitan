@@ -178,7 +178,6 @@ module aes_cipher_core import aes_pkg::*;
   add_rk_sel_e                        add_rk_sel;
   logic                               add_rk_sel_err;
 
-  logic                   [7:0][31:0] key_full_d [NumShares];
   logic                   [7:0][31:0] key_full_q [NumShares];
   sp2v_e                              key_full_we_ctrl;
   sp2v_e                              key_full_we;
@@ -503,21 +502,16 @@ module aes_cipher_core import aes_pkg::*;
   // Full Key registers
   for (genvar s = 0; s < NumShares; s++) begin : gen_shares_mux_full_key
     aes_cipher_mux_full_key u_aes_cipher_mux_full_key_s (
+      .clk_i              ( clk_i               ),
+      .rst_ni             ( rst_ni              ),
+      .key_full_we_i      ( key_full_we         ),
       .key_full_sel_i     ( key_full_sel        ),
       .key_init_i         ( key_init_i[s]       ),
       .key_dec_i          ( key_dec_q[s]        ),
       .key_expand_out_i   ( key_expand_out[s]   ),
       .prd_clearing_256_i ( prd_clearing_256[s] ),
-      .key_full_o         ( key_full_d[s]       )
+      .key_full_o         ( key_full_q[s]       )
     );
-  end
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin : key_full_reg
-    if (!rst_ni) begin
-      key_full_q <= '{default: '0};
-    end else if (key_full_we == SP2V_HIGH) begin
-      key_full_q <= key_full_d;
-    end
   end
 
   // SEC_CM: KEY.SEC_WIPE
