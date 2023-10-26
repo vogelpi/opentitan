@@ -197,7 +197,9 @@ module aes_prng_masking import aes_pkg::*;
 
   // To achieve independence of input and output masks (the output mask of round X is the input
   // mask of round X+1), we assign the scrambled chunks to the output data in alternating fashion.
-  assign data_o = phase_q ? {perm[0], perm[NumChunks-1:1]} : perm;
+  assign data_o =
+      (SecAllowForcingMasks && force_masks_i) ? '0                             :
+       phase_q                                ? {perm[0], perm[NumChunks-1:1]} : perm;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : reg_phase
     if (!rst_ni) begin
