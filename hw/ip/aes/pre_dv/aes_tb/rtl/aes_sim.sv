@@ -8,7 +8,7 @@ module aes_sim import aes_pkg::*;
 #(
   parameter bit          AES192Enable         = 1,
   parameter bit          SecMasking           = 1,
-  parameter sbox_impl_e  SecSBoxImpl          = SBoxImplDom,
+  parameter sbox_impl_e  SecSBoxImpl          = SBoxImplCanrightMaskedNoreuse,
   parameter int unsigned SecStartTriggerDelay = 40,
   parameter bit          SecAllowForcingMasks = 1,
   parameter bit          SecSkipPRNGReseeding = 0

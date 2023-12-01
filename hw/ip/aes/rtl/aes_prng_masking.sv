@@ -58,11 +58,14 @@ module aes_prng_masking import aes_pkg::*;
   input  logic [EntropyWidth-1:0] entropy_i
 );
 
+  localparam int unsigned NumBytes  = Width/8;
+
   logic                [NumChunks-1:0] prng_seed_en;
   logic [NumChunks-1:0][ChunkSize-1:0] prng_seed;
   logic                                prng_en;
   logic [NumChunks-1:0][ChunkSize-1:0] prng_state, perm;
-  logic                    [Width-1:0] prng_b, perm_b;
+  logic            [NumBytes-1:0][7:0] prng_bytes, sub_bytes;
+  logic                    [Width-1:0] sub_bits, perm_bits;
   logic                                phase_q;
 
   /////////////
@@ -171,8 +174,9 @@ module aes_prng_masking import aes_pkg::*;
       .LfsrDw       ( ChunkSize                                   ),
       .StateOutDw   ( ChunkSize                                   ),
       .DefaultSeed  ( RndCnstLfsrSeed[c * ChunkSize +: ChunkSize] ),
-      .StatePermEn  ( 1'b0                                        ),
-      .NonLinearOut ( 1'b1                                        )
+      .StatePermEn  ( 1'b1                                        ),
+      .StatePerm    ( RndCnstChunkLfsrPermDefault                 ),
+      .NonLinearOut ( 1'b0                                        )
     ) u_lfsr_chunk (
       .clk_i     ( clk_i           ),
       .rst_ni    ( rst_ni          ),
@@ -184,12 +188,19 @@ module aes_prng_masking import aes_pkg::*;
     );
   end
 
-  // Add a permutation layer spanning across all LFSRs to break linear shift patterns.
-  assign prng_b = prng_state;
-  for (genvar b = 0; b < Width; b++) begin : gen_perm
-    assign perm_b[b] = prng_b[RndCnstLfsrPerm[b]];
+  // Furhter "scramble" the PRNG state at the byte level to break linear shift patterns.
+  assign prng_bytes = prng_state;
+  for (genvar b = 0; b < NumBytes; b++) begin : gen_sub
+    assign sub_bytes[b] = prim_cipher_pkg::sbox4_8bit(prng_bytes[b], prim_cipher_pkg::PRINCE_SBOX4);
   end
-  assign perm = perm_b;
+  assign sub_bits = sub_bytes;
+
+  // Add a permutation layer spanning across all LFSRs to break linear shift patterns.
+  for (genvar b = 0; b < Width; b++) begin : gen_perm
+    //assign perm_bits[b] = sub_bits[RndCnstLfsrPerm[b]];
+    assign perm_bits[b] = sub_bits[b];
+  end
+  assign perm = perm_bits;
 
   /////////////
   // Outputs //

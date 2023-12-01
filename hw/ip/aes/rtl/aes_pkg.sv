@@ -25,14 +25,14 @@ parameter int unsigned NumChunksPRDClearing128 = 128/WidthPRDClearing;
 parameter int unsigned NumChunksPRDClearing256 = 256/WidthPRDClearing;
 
 // Widths of signals carrying pseudo-random data for masking
-parameter int unsigned WidthPRDSBox     = 8;  // Number PRD bits per S-Box. This includes the
-                                              // 8 bits for the output mask when using any of the
-                                              // masked Canright S-Box implementations.
+parameter int unsigned WidthPRDSBox     = 18;  // Number PRD bits per S-Box. This includes the
+                                               // 8 bits for the output mask when using any of the
+                                               // masked Canright S-Box implementations.
 parameter int unsigned WidthPRDData     = 16*WidthPRDSBox; // 16 S-Boxes for the data path
 parameter int unsigned WidthPRDKey      = 4*WidthPRDSBox;  // 4 S-Boxes for the key expand
 parameter int unsigned WidthPRDMasking  = WidthPRDData + WidthPRDKey;
 
-parameter int unsigned ChunkSizePRDMasking = WidthPRDMasking/5;
+parameter int unsigned ChunkSizePRDMasking = WidthPRDMasking/10;
 
 // Clearing PRNG default LFSR seed and permutation
 // These LFSR parameters have been generated with
@@ -54,18 +54,36 @@ parameter clearing_lfsr_perm_t RndCnstClearingSharePermDefault = {
 // Masking PRNG default LFSR seed and permutation
 // We use a single seed that is split down into chunks internally.
 // These LFSR parameters have been generated with
-// $ util/design/gen-lfsr-seed.py --width 160 --seed 31468618 --prefix "Masking"
-parameter int MaskingLfsrWidth = 160; // = WidthPRDMasking = WidthPRDSBox * (16 + 4)
+// $ ./util/design/gen-lfsr-seed.py --width 360 --seed 31468618 --prefix "Masking"
+parameter int MaskingLfsrWidth = 360;
 typedef logic [MaskingLfsrWidth-1:0] masking_lfsr_seed_t;
 typedef logic [MaskingLfsrWidth-1:0][$clog2(MaskingLfsrWidth)-1:0] masking_lfsr_perm_t;
-parameter masking_lfsr_seed_t RndCnstMaskingLfsrSeedDefault =
-  160'hc132b5723c5a4cf4743b3c7c32d580f74f1713a;
+parameter masking_lfsr_seed_t RndCnstMaskingLfsrSeedDefault = {
+  104'h5a_e9b31605_f9077a6b_758a4420,
+  256'h31e1c461_6ea343ec_153282a3_0c132b57_23c5a4cf_4743b3c7_c32d580f_74f1713a
+};
 parameter masking_lfsr_perm_t RndCnstMaskingLfsrPermDefault = {
-  256'h17261943423e4c5c03872194050c7e5f8497081d96666d406f4b606473303469,
-  256'h8e7c721c8832471f59919e0b128f067b25622768462e554d8970815d490d7f44,
-  256'h048c867d907a239b20220f6c79071a852d76485452189f14091b1e744e396737,
-  256'h4f785b772b352f6550613c58130a8b104a3f28019c9a380233956b00563a512c,
-  256'h808d419d63982a16995e0e3b57826a36718a9329452492533d83115a75316e15
+  168'h4b_a81aa620_41098b24_8918527c_32928785_d0cd5ea8,
+  256'h260a35d5_ac9423e1_a4e38126_8e6bb642_5d86a852_beeccae5_fced402a_111dcbcc,
+  256'h13ed3220_21383566_a60272c4_2e890923_e14e5b3d_859f2b5f_0d4407e8_01aa901b,
+  256'h39544b55_b195383d_366f8e2b_9420751a_7c8d123c_10a424f1_228074b0_4cd969d0,
+  256'h780970f4_84940571_15bb8263_1f1bb4ca_e8096c0e_270d54ac_c5ce7430_4cb9580c,
+  256'h1b6363d7_74319521_985065d5_91b3ad0f_245b27d6_a995d19c_752f6d0b_c3481873,
+  256'h01f2d846_2c077173_ca2e9296_324b072a_149cdc0c_349d1e13_669a20ce_3af70f92,
+  256'hc2d62683_b24ced51_b3a9b270_60b1495d_33254235_69143e87_451880c0_09828c2e,
+  256'hc71c0ab4_5565b8ab_f972436e_46aaa072_abc650f5_a5a70d05_805b1646_618f399b,
+  256'h329a9958_de719eb1_dbcfa794_59b6753f_97d28c21_801630c4_1fc66c95_a7f84211,
+  256'h5e553a5f_8254753e_8e881f13_5241c35b_d9693fa5_18ea15f1_39b8f647_724c9bac,
+  256'hc052b1ac_bd7993c5_0ef20ca9_faa20211_488e1043_35200174_16602839_c44a4082,
+  256'h3131a796_52a0b60c_bc0e9da7_2af82b50_d9347145_0a652455_48932553_9ea0e23
+};
+
+// These LFSR parameters have been generated with
+// $ ./util/design/gen-lfsr-seed.py --width 36 --seed 31468618 --prefix "Chunk"
+parameter int ChunkLfsrWidth = 36;
+typedef logic [ChunkLfsrWidth-1:0][$clog2(ChunkLfsrWidth)-1:0] chunk_lfsr_perm_t;
+parameter chunk_lfsr_perm_t RndCnstChunkLfsrPermDefault = {
+  216'h6587da_04c59c02_125750f3_5e7634e0_89511228_74022ce1_9b143211
 };
 
 typedef enum integer {

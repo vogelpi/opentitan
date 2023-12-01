@@ -62,7 +62,7 @@
     },
     { name:    "SecSBoxImpl",
       type:    "aes_pkg::sbox_impl_e",
-      default: "aes_pkg::SBoxImplDom",
+      default: "aes_pkg::SBoxImplCanrightMaskedNoreuse",
       desc:    '''
         Selection of the S-Box implementation. See aes_pkg.sv.
       '''
@@ -131,7 +131,7 @@
       desc:    '''
         Default seed of the PRNG used for masking.
       '''
-      randcount: "160",
+      randcount: "360",
       randtype:  "data"
     },
     { name:    "RndCnstMaskingLfsrPerm",
@@ -139,7 +139,7 @@
       desc:    '''
         Permutation applied to the concatenated LFSRs of the PRNG used for masking.
       '''
-      randcount: "160",
+      randcount: "360",
       randtype:  "perm"
     },
     # Note: All parameters below are local, they are not actually configurable.

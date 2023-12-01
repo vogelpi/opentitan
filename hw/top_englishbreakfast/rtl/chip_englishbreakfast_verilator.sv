@@ -159,7 +159,7 @@ module chip_englishbreakfast_verilator (
   // Top-level design
   top_englishbreakfast #(
     .SecAesMasking(1'b1),
-    .SecAesSBoxImpl(aes_pkg::SBoxImplDom),
+    .SecAesSBoxImpl(aes_pkg::SBoxImplCanrightMaskedNoreuse),
     .SecAesStartTriggerDelay(320),
     .SecAesAllowForcingMasks(1'b1),
     .SecAesSkipPRNGReseeding(1'b1),

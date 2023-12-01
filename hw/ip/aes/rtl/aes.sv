@@ -15,7 +15,7 @@ module aes
                                                     // 1 (first-order masking) of the cipher
                                                     // core. Masking requires the use of a
                                                     // masked S-Box, see SecSBoxImpl parameter.
-  parameter sbox_impl_e  SecSBoxImpl           = SBoxImplDom, // See aes_pkg.sv
+  parameter sbox_impl_e  SecSBoxImpl           = SBoxImplCanrightMaskedNoreuse, // See aes_pkg.sv
   parameter int unsigned SecStartTriggerDelay  = 0, // Manual start trigger delay, useful for
                                                     // SCA measurements. A value of e.g. 40
                                                     // allows the processor to go into sleep
