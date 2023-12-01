@@ -32,8 +32,6 @@ parameter int unsigned WidthPRDData     = 16*WidthPRDSBox; // 16 S-Boxes for the
 parameter int unsigned WidthPRDKey      = 4*WidthPRDSBox;  // 4 S-Boxes for the key expand
 parameter int unsigned WidthPRDMasking  = WidthPRDData + WidthPRDKey;
 
-parameter int unsigned ChunkSizePRDMasking = WidthPRDMasking/5;
-
 // Clearing PRNG default LFSR seed and permutation
 // These LFSR parameters have been generated with
 // $ util/design/gen-lfsr-seed.py --width 64 --seed 31468618 --prefix "Clearing"
