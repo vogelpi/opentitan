@@ -118,7 +118,7 @@ module aes_prng_masking import aes_pkg::*;
 
   // Add a permutation layer to obfuscate the output of stream cipher primitive.
   for (genvar b = 0; b < Width; b++) begin : gen_perm
-    assign data_o[b] = prng_key[RndCnstLfsrPerm[b]];
+    assign data_o[b] = SecAllowForcingMasks && force_masks_i ? 1'b0 : prng_key[RndCnstLfsrPerm[b]];
   end
 
   // At the moment, the PRNG error output is ignored. This signal is asserted only if the stream
