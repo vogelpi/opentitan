@@ -46,17 +46,85 @@ module kmac_reduced_tb #(
   logic error;
 
   // Instantiate DUT
-  kmac_reduced #(
-    .EnMasking(EnMasking),
-    .MsgLen(MsgLen),
-    .EntropyWidth(EntropyWidth),
-  ) u_kmac_reduced (
+  // kmac_reduced #(
+  //   .EnMasking(EnMasking),
+  //   .MsgLen(MsgLen),
+  //   .EntropyWidth(EntropyWidth),
+  // ) u_kmac_reduced (
+  //   .clk_i,
+  //   .rst_ni,
+
+  //   // Inputs exercised by SCA tools.
+  //   // Pre-masked message input. The message is provided in one shot to facilitate the interfacing.
+  //   .msg_i(msg),
+  //   .msg_valid_i(msg_valid),
+  //   .msg_ready_o(msg_ready),
+
+  //   // SHA3 control and status
+  //   .start_i(sha3_start),      // 1 pulse after reseeding PRNG and injecting
+  //                              // messsage
+  //   .process_i(sha3_process),  // 1 pulse after loading message into SHA3
+  //   .run_i(1'b0),              // drive to 0
+  //   .done_i(done),             // drive to MuBi4True after
+  //                              // absorbed_o == MuBi4True
+  //   .absorbed_o(absorbed),
+  //   .squeezing_o(),
+  //   .block_processed_o(),
+  //   .sha3_fsm_o(sha3_fsm),
+
+  //   // Entropy interface
+  //   .entropy_ready_i(entropy_ready),
+  //   .entropy_refresh_req_i(entropy_refresh_req),
+  //   .entropy_i(entropy),
+  //   .entropy_req_o(entropy_req),
+  //   .entropy_ack_i(1'b1),
+
+  //   // Inputs driven with constant values for evaluation but we want to avoid synthesis optimizing
+  //   // them.
+  //   // SHA3 configuration
+  //   .mode_i(Sha3),                     // sha3_pkg::Sha3
+  //   .strength_i(L256),                 // sha3_pkg::L256
+  //   .ns_prefix_i(352'h4341_4D4B_2001), // Ignored for Sha3,
+  //                                      // 48'h4341_4D4B_2001 ("KMAC") for CShake
+  //   .msg_strb_i({MsgStrbW{1'b1}}),     // drive to all-1
+
+  //   // Entropy configuration
+  //   .msg_mask_en_i(1'b1),            // drive to 1
+  //   .entropy_mode_i(EntropyModeEdn), // drive to kmac_pkg::EntropyModeEdn
+  //   .entropy_fast_process_i(1'b0),   // drive to 0
+  //   .entropy_in_keyblock_i(1'b1),    // drive to 1
+
+  //   // Entropy reseed control
+  //   .entropy_seed_update_i('0),                 // drive to 0
+  //   .entropy_seed_data_i('0),                   // drive to 0
+  //   .wait_timer_prescaler_i('0),                // drive to 0
+  //   .wait_timer_limit_i({EdnWaitTimerW{1'b1}}), // drive to EdnWaitTimerW'1
+
+  //   // Signals primarily kept to prevent them from being optimized away during synthesis.
+  //   // State output
+  //   .state_o(state),
+  //   .state_valid_o(state_valid),
+
+  //   // Entropy status signals
+  //   .entropy_configured_o(),
+  //   .entropy_hash_threshold_i({HashCntW{1'b1}}), // drive to max
+  //   .entropy_hash_clr_i(1'b0),                   // drive to 0
+  //   .entropy_hash_cnt_o(),
+
+  //   // Life cycle interface
+  //   .lc_escalate_en_i(lc_ctrl_pkg::Off),
+
+  //   // Error signaling
+  //   .err_o(error),
+  //   .err_processed_i(1'b0)  // drive 0
+  // );
+  kmac_reduced_pre_map u_kmac_reduced (
     .clk_i,
     .rst_ni,
 
     // Inputs exercised by SCA tools.
     // Pre-masked message input. The message is provided in one shot to facilitate the interfacing.
-    .msg_i(msg),
+    .msg_i({msg[1], msg[0]}),
     .msg_valid_i(msg_valid),
     .msg_ready_o(msg_ready),
 
@@ -102,7 +170,7 @@ module kmac_reduced_tb #(
 
     // Signals primarily kept to prevent them from being optimized away during synthesis.
     // State output
-    .state_o(state),
+    .state_o({state[1], state[0]}),
     .state_valid_o(state_valid),
 
     // Entropy status signals
