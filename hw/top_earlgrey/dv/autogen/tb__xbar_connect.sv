@@ -51,9 +51,7 @@ tl_if usbdev_tl_if(clk_usb, rst_n);
 tl_if flash_ctrl__core_tl_if(clk_main, rst_n);
 tl_if flash_ctrl__prim_tl_if(clk_main, rst_n);
 tl_if flash_ctrl__mem_tl_if(clk_main, rst_n);
-tl_if hmac_tl_if(clk_main, rst_n);
 tl_if kmac_tl_if(clk_main, rst_n);
-tl_if aes_tl_if(clk_main, rst_n);
 tl_if entropy_src_tl_if(clk_main, rst_n);
 tl_if csrng_tl_if(clk_main, rst_n);
 tl_if edn0_tl_if(clk_main, rst_n);
@@ -133,9 +131,7 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(flash_ctrl__core, flash_ctrl, core_tl)
     `DRIVE_CHIP_TL_DEVICE_IF(flash_ctrl__prim, flash_ctrl, prim_tl)
     `DRIVE_CHIP_TL_DEVICE_IF(flash_ctrl__mem, flash_ctrl, mem_tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(hmac, hmac, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(kmac, kmac, tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(aes, aes, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(entropy_src, entropy_src, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(csrng, csrng, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(edn0, edn0, tl)

@@ -68,7 +68,7 @@
 
   // idle hints
   // SEC_CM: IDLE.INTERSIG.MUBI
-  input prim_mubi_pkg::mubi4_t [3:0] idle_i,
+  input prim_mubi_pkg::mubi4_t [1:0] idle_i,
 
   // life cycle state output
   // SEC_CM: LC_CTRL.INTERSIG.MUBI
@@ -975,51 +975,7 @@
   // clock target
   ////////////////////////////////////////////////////
 
-  logic [3:0] idle_cnt_err;
-
-  clkmgr_trans #(
-    .FpgaBufGlobal(1'b0) // This clock is used primarily locally.
-  ) u_clk_main_aes_trans (
-    .clk_i(clk_main),
-    .clk_gated_i(clk_main_root),
-    .rst_ni(rst_main_ni),
-    .en_i(clk_main_en),
-    .idle_i(idle_i[HintMainAes]),
-    .sw_hint_i(reg2hw.clk_hints.clk_main_aes_hint.q),
-    .scanmode_i,
-    .alert_cg_en_o(cg_en_o.main_aes),
-    .clk_o(clocks_o.clk_main_aes),
-    .clk_reg_i(clk_i),
-    .rst_reg_ni(rst_ni),
-    .reg_en_o(hw2reg.clk_hints_status.clk_main_aes_val.d),
-    .reg_cnt_err_o(idle_cnt_err[HintMainAes])
-  );
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
-    ClkMainAesCountCheck_A,
-    u_clk_main_aes_trans.u_idle_cnt,
-    alert_tx_o[1])
-
-  clkmgr_trans #(
-    .FpgaBufGlobal(1'b0) // This clock is used primarily locally.
-  ) u_clk_main_hmac_trans (
-    .clk_i(clk_main),
-    .clk_gated_i(clk_main_root),
-    .rst_ni(rst_main_ni),
-    .en_i(clk_main_en),
-    .idle_i(idle_i[HintMainHmac]),
-    .sw_hint_i(reg2hw.clk_hints.clk_main_hmac_hint.q),
-    .scanmode_i,
-    .alert_cg_en_o(cg_en_o.main_hmac),
-    .clk_o(clocks_o.clk_main_hmac),
-    .clk_reg_i(clk_i),
-    .rst_reg_ni(rst_ni),
-    .reg_en_o(hw2reg.clk_hints_status.clk_main_hmac_val.d),
-    .reg_cnt_err_o(idle_cnt_err[HintMainHmac])
-  );
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
-    ClkMainHmacCountCheck_A,
-    u_clk_main_hmac_trans.u_idle_cnt,
-    alert_tx_o[1])
+  logic [1:0] idle_cnt_err;
 
   clkmgr_trans #(
     .FpgaBufGlobal(1'b1) // KMAC is getting too big for a single clock region.
@@ -1068,8 +1024,6 @@
   assign hw2reg.fatal_err_code.idle_cnt.de = |idle_cnt_err;
 
   // state readback
-  assign hw2reg.clk_hints_status.clk_main_aes_val.de = 1'b1;
-  assign hw2reg.clk_hints_status.clk_main_hmac_val.de = 1'b1;
   assign hw2reg.clk_hints_status.clk_main_kmac_val.de = 1'b1;
   assign hw2reg.clk_hints_status.clk_main_otbn_val.de = 1'b1;
 

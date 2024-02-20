@@ -81,12 +81,10 @@
       flash_ctrl.core
       flash_ctrl.prim
       flash_ctrl.mem
-      aes
       entropy_src
       csrng
       edn0
       edn1
-      hmac
       rv_plic
       otbn
       keymgr
@@ -108,12 +106,10 @@
       flash_ctrl.core
       flash_ctrl.prim
       flash_ctrl.mem
-      aes
       entropy_src
       csrng
       edn0
       edn1
-      hmac
       rv_plic
       otbn
       keymgr
@@ -373,25 +369,6 @@
       pipeline: true
     }
     {
-      name: hmac
-      type: device
-      clock: clk_main_i
-      reset: rst_main_ni
-      req_fifo_pass: false
-      rsp_fifo_pass: false
-      inst_type: hmac
-      addr_range:
-      [
-        {
-          base_addr: 0x41110000
-          size_byte: 0x1000
-        }
-      ]
-      xbar: false
-      stub: false
-      pipeline: true
-    }
-    {
       name: kmac
       type: device
       clock: clk_main_i
@@ -404,25 +381,6 @@
         {
           base_addr: 0x41120000
           size_byte: 0x1000
-        }
-      ]
-      xbar: false
-      stub: false
-      pipeline: true
-    }
-    {
-      name: aes
-      type: device
-      clock: clk_main_i
-      reset: rst_main_ni
-      req_fifo_pass: false
-      rsp_fifo_pass: false
-      inst_type: aes
-      addr_range:
-      [
-        {
-          base_addr: 0x41100000
-          size_byte: 0x100
         }
       ]
       xbar: false

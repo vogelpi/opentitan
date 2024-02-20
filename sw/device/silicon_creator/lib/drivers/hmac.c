@@ -13,6 +13,8 @@
 #include "hmac_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
+#define TOP_EARLGREY_HMAC_BASE_ADDR 0x0
+
 void hmac_sha256_init(void) {
   // Clear the config, stopping the SHA engine.
   abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CFG_REG_OFFSET, 0u);

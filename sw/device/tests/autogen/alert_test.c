@@ -11,7 +11,6 @@
 #include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_adc_ctrl.h"
-#include "sw/device/lib/dif/dif_aes.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
 #include "sw/device/lib/dif/dif_clkmgr.h"
@@ -20,7 +19,6 @@
 #include "sw/device/lib/dif/dif_entropy_src.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_gpio.h"
-#include "sw/device/lib/dif/dif_hmac.h"
 #include "sw/device/lib/dif/dif_i2c.h"
 #include "sw/device/lib/dif/dif_keymgr.h"
 #include "sw/device/lib/dif/dif_kmac.h"
@@ -55,7 +53,6 @@ OTTF_DEFINE_TEST_CONFIG();
 
 static dif_alert_handler_t alert_handler;
 static dif_adc_ctrl_t adc_ctrl_aon;
-static dif_aes_t aes;
 static dif_aon_timer_t aon_timer_aon;
 static dif_clkmgr_t clkmgr_aon;
 static dif_csrng_t csrng;
@@ -64,7 +61,6 @@ static dif_edn_t edn1;
 static dif_entropy_src_t entropy_src;
 static dif_flash_ctrl_t flash_ctrl;
 static dif_gpio_t gpio;
-static dif_hmac_t hmac;
 static dif_i2c_t i2c0;
 static dif_i2c_t i2c1;
 static dif_i2c_t i2c2;
@@ -106,9 +102,6 @@ static void init_peripherals(void) {
   base_addr = mmio_region_from_addr(TOP_EARLGREY_ADC_CTRL_AON_BASE_ADDR);
   CHECK_DIF_OK(dif_adc_ctrl_init(base_addr, &adc_ctrl_aon));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR);
-  CHECK_DIF_OK(dif_aes_init(base_addr, &aes));
-
   base_addr = mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR);
   CHECK_DIF_OK(dif_aon_timer_init(base_addr, &aon_timer_aon));
 
@@ -132,9 +125,6 @@ static void init_peripherals(void) {
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR);
   CHECK_DIF_OK(dif_gpio_init(base_addr, &gpio));
-
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR);
-  CHECK_DIF_OK(dif_hmac_init(base_addr, &hmac));
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_I2C0_BASE_ADDR);
   CHECK_DIF_OK(dif_i2c_init(base_addr, &i2c0));
@@ -296,21 +286,6 @@ static void trigger_alert_test(void) {
         &alert_handler, exp_alert));
   }
 
-  // Write aes's alert_test reg and check alert_cause.
-  for (dif_aes_alert_t i = 0; i < 2; ++i) {
-    CHECK_DIF_OK(dif_aes_alert_force(&aes, kDifAesAlertRecovCtrlUpdateErr + i));
-
-    // Verify that alert handler received it.
-    exp_alert = kTopEarlgreyAlertIdAesRecovCtrlUpdateErr + i;
-    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
-        &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %d!", exp_alert);
-
-    // Clear alert cause register
-    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
-        &alert_handler, exp_alert));
-  }
-
   // Write aon_timer's alert_test reg and check alert_cause.
   for (dif_aon_timer_alert_t i = 0; i < 1; ++i) {
     CHECK_DIF_OK(dif_aon_timer_alert_force(&aon_timer_aon, kDifAonTimerAlertFatalFault + i));
@@ -422,21 +397,6 @@ static void trigger_alert_test(void) {
 
     // Verify that alert handler received it.
     exp_alert = kTopEarlgreyAlertIdGpioFatalFault + i;
-    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
-        &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %d!", exp_alert);
-
-    // Clear alert cause register
-    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
-        &alert_handler, exp_alert));
-  }
-
-  // Write hmac's alert_test reg and check alert_cause.
-  for (dif_hmac_alert_t i = 0; i < 1; ++i) {
-    CHECK_DIF_OK(dif_hmac_alert_force(&hmac, kDifHmacAlertFatalFault + i));
-
-    // Verify that alert handler received it.
-    exp_alert = kTopEarlgreyAlertIdHmacFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);

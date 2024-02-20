@@ -50,7 +50,6 @@ package(default_visibility = ["//visibility:public"])
             "//sw/device/lib/dif:entropy_src",
             "//sw/device/lib/dif:flash_ctrl",
             "//sw/device/lib/dif:gpio",
-            "//sw/device/lib/dif:hmac",
             "//sw/device/lib/dif:i2c",
             "//sw/device/lib/dif:keymgr",
             "//sw/device/lib/dif:kmac",
@@ -72,7 +71,7 @@ package(default_visibility = ["//visibility:public"])
             "//sw/device/lib/testing/test_framework:ottf_main",
         ],
     )
-    for min in range(0, 23, 10)
+    for min in range(0, 22, 10)
 ]
 
 test_suite(
@@ -102,7 +101,6 @@ opentitan_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:adc_ctrl",
-        "//sw/device/lib/dif:aes",
         "//sw/device/lib/dif:alert_handler",
         "//sw/device/lib/dif:aon_timer",
         "//sw/device/lib/dif:clkmgr",
@@ -111,7 +109,6 @@ opentitan_test(
         "//sw/device/lib/dif:entropy_src",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:gpio",
-        "//sw/device/lib/dif:hmac",
         "//sw/device/lib/dif:i2c",
         "//sw/device/lib/dif:keymgr",
         "//sw/device/lib/dif:kmac",

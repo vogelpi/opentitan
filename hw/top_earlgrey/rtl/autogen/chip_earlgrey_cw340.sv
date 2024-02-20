@@ -976,17 +976,14 @@ module chip_earlgrey_cw340 #(
 // Also need to add AST simulation and FPGA emulation models for things like entropy source -
 // otherwise Verilator / FPGA will hang.
   top_earlgrey #(
-    .SecAesMasking(1'b0),
-    .SecAesSBoxImpl(aes_pkg::SBoxImplLut),
-    .SecAesStartTriggerDelay(320),
-    .SecAesAllowForcingMasks(1'b1),
-    .KmacEnMasking(0),
+    .KmacEnMasking(1),
     .KmacSwKeyMasked(1),
     .SecKmacCmdDelay(320),
     .SecKmacIdleAcceptSwMsg(1'b1),
-    .KeymgrKmacEnMasking(0),
+    .KeymgrKmacEnMasking(1),
     .CsrngSBoxImpl(aes_pkg::SBoxImplLut),
     .OtbnRegFile(otbn_pkg::RegFileFPGA),
+    .OtbnStub(1'b1),
     .SecOtbnMuteUrnd(1'b1),
     .SecOtbnSkipUrndReseedAtStart(1'b1),
     .OtpCtrlMemInitFile(OtpCtrlMemInitFile),
@@ -1114,11 +1111,11 @@ module chip_earlgrey_cw340 #(
   clkmgr_pkg::hint_names_e trigger_sel;
   always_comb begin : trigger_sel_mux
     unique case ({mio_out[MioOutGpioGpio11], mio_out[MioOutGpioGpio10]})
-      2'b00:   trigger_sel = clkmgr_pkg::HintMainAes;
-      2'b01:   trigger_sel = clkmgr_pkg::HintMainHmac;
+      2'b00,
+      2'b01,
       2'b10:   trigger_sel = clkmgr_pkg::HintMainKmac;
       2'b11:   trigger_sel = clkmgr_pkg::HintMainOtbn;
-      default: trigger_sel = clkmgr_pkg::HintMainAes;
+      default: trigger_sel = clkmgr_pkg::HintMainKmac;
     endcase;
   end
   assign clk_trans_idle = top_earlgrey.clkmgr_aon_idle[trigger_sel];

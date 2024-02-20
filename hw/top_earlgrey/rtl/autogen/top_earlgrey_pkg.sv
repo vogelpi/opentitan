@@ -372,26 +372,6 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_RV_PLIC_SIZE_BYTES = 32'h8000000;
 
   /**
-   * Peripheral base address for aes in top earlgrey.
-   */
-  parameter int unsigned TOP_EARLGREY_AES_BASE_ADDR = 32'h41100000;
-
-  /**
-   * Peripheral size in bytes for aes in top earlgrey.
-   */
-  parameter int unsigned TOP_EARLGREY_AES_SIZE_BYTES = 32'h100;
-
-  /**
-   * Peripheral base address for hmac in top earlgrey.
-   */
-  parameter int unsigned TOP_EARLGREY_HMAC_BASE_ADDR = 32'h41110000;
-
-  /**
-   * Peripheral size in bytes for hmac in top earlgrey.
-   */
-  parameter int unsigned TOP_EARLGREY_HMAC_SIZE_BYTES = 32'h1000;
-
-  /**
    * Peripheral base address for kmac in top earlgrey.
    */
   parameter int unsigned TOP_EARLGREY_KMAC_BASE_ADDR = 32'h41120000;
@@ -583,18 +563,16 @@ package top_earlgrey_pkg;
     TopEarlgreyAlertPeripheralFlashCtrl = 26,
     TopEarlgreyAlertPeripheralRvDm = 27,
     TopEarlgreyAlertPeripheralRvPlic = 28,
-    TopEarlgreyAlertPeripheralAes = 29,
-    TopEarlgreyAlertPeripheralHmac = 30,
-    TopEarlgreyAlertPeripheralKmac = 31,
-    TopEarlgreyAlertPeripheralOtbn = 32,
-    TopEarlgreyAlertPeripheralKeymgr = 33,
-    TopEarlgreyAlertPeripheralCsrng = 34,
-    TopEarlgreyAlertPeripheralEntropySrc = 35,
-    TopEarlgreyAlertPeripheralEdn0 = 36,
-    TopEarlgreyAlertPeripheralEdn1 = 37,
-    TopEarlgreyAlertPeripheralSramCtrlMain = 38,
-    TopEarlgreyAlertPeripheralRomCtrl = 39,
-    TopEarlgreyAlertPeripheralRvCoreIbex = 40,
+    TopEarlgreyAlertPeripheralKmac = 29,
+    TopEarlgreyAlertPeripheralOtbn = 30,
+    TopEarlgreyAlertPeripheralKeymgr = 31,
+    TopEarlgreyAlertPeripheralCsrng = 32,
+    TopEarlgreyAlertPeripheralEntropySrc = 33,
+    TopEarlgreyAlertPeripheralEdn0 = 34,
+    TopEarlgreyAlertPeripheralEdn1 = 35,
+    TopEarlgreyAlertPeripheralSramCtrlMain = 36,
+    TopEarlgreyAlertPeripheralRomCtrl = 37,
+    TopEarlgreyAlertPeripheralRvCoreIbex = 38,
     TopEarlgreyAlertPeripheralCount
   } alert_peripheral_e;
 
@@ -642,29 +620,26 @@ package top_earlgrey_pkg;
     TopEarlgreyAlertIdFlashCtrlRecovPrimFlashAlert = 39,
     TopEarlgreyAlertIdRvDmFatalFault = 40,
     TopEarlgreyAlertIdRvPlicFatalFault = 41,
-    TopEarlgreyAlertIdAesRecovCtrlUpdateErr = 42,
-    TopEarlgreyAlertIdAesFatalFault = 43,
-    TopEarlgreyAlertIdHmacFatalFault = 44,
-    TopEarlgreyAlertIdKmacRecovOperationErr = 45,
-    TopEarlgreyAlertIdKmacFatalFaultErr = 46,
-    TopEarlgreyAlertIdOtbnFatal = 47,
-    TopEarlgreyAlertIdOtbnRecov = 48,
-    TopEarlgreyAlertIdKeymgrRecovOperationErr = 49,
-    TopEarlgreyAlertIdKeymgrFatalFaultErr = 50,
-    TopEarlgreyAlertIdCsrngRecovAlert = 51,
-    TopEarlgreyAlertIdCsrngFatalAlert = 52,
-    TopEarlgreyAlertIdEntropySrcRecovAlert = 53,
-    TopEarlgreyAlertIdEntropySrcFatalAlert = 54,
-    TopEarlgreyAlertIdEdn0RecovAlert = 55,
-    TopEarlgreyAlertIdEdn0FatalAlert = 56,
-    TopEarlgreyAlertIdEdn1RecovAlert = 57,
-    TopEarlgreyAlertIdEdn1FatalAlert = 58,
-    TopEarlgreyAlertIdSramCtrlMainFatalError = 59,
-    TopEarlgreyAlertIdRomCtrlFatal = 60,
-    TopEarlgreyAlertIdRvCoreIbexFatalSwErr = 61,
-    TopEarlgreyAlertIdRvCoreIbexRecovSwErr = 62,
-    TopEarlgreyAlertIdRvCoreIbexFatalHwErr = 63,
-    TopEarlgreyAlertIdRvCoreIbexRecovHwErr = 64,
+    TopEarlgreyAlertIdKmacRecovOperationErr = 42,
+    TopEarlgreyAlertIdKmacFatalFaultErr = 43,
+    TopEarlgreyAlertIdOtbnFatal = 44,
+    TopEarlgreyAlertIdOtbnRecov = 45,
+    TopEarlgreyAlertIdKeymgrRecovOperationErr = 46,
+    TopEarlgreyAlertIdKeymgrFatalFaultErr = 47,
+    TopEarlgreyAlertIdCsrngRecovAlert = 48,
+    TopEarlgreyAlertIdCsrngFatalAlert = 49,
+    TopEarlgreyAlertIdEntropySrcRecovAlert = 50,
+    TopEarlgreyAlertIdEntropySrcFatalAlert = 51,
+    TopEarlgreyAlertIdEdn0RecovAlert = 52,
+    TopEarlgreyAlertIdEdn0FatalAlert = 53,
+    TopEarlgreyAlertIdEdn1RecovAlert = 54,
+    TopEarlgreyAlertIdEdn1FatalAlert = 55,
+    TopEarlgreyAlertIdSramCtrlMainFatalError = 56,
+    TopEarlgreyAlertIdRomCtrlFatal = 57,
+    TopEarlgreyAlertIdRvCoreIbexFatalSwErr = 58,
+    TopEarlgreyAlertIdRvCoreIbexRecovSwErr = 59,
+    TopEarlgreyAlertIdRvCoreIbexFatalHwErr = 60,
+    TopEarlgreyAlertIdRvCoreIbexRecovHwErr = 61,
     TopEarlgreyAlertIdCount
   } alert_id_e;
 
@@ -930,7 +905,6 @@ package top_earlgrey_pkg;
   // List of peripheral instantiated in this chip.
   typedef enum {
     PeripheralAdcCtrlAon,
-    PeripheralAes,
     PeripheralAlertHandler,
     PeripheralAonTimerAon,
     PeripheralAst,
@@ -941,7 +915,6 @@ package top_earlgrey_pkg;
     PeripheralEntropySrc,
     PeripheralFlashCtrl,
     PeripheralGpio,
-    PeripheralHmac,
     PeripheralI2c0,
     PeripheralI2c1,
     PeripheralI2c2,

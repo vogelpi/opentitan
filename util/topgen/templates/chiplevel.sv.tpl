@@ -1101,10 +1101,6 @@ module chip_${top["name"]}_${target["name"]} #(
 // otherwise Verilator / FPGA will hang.
   top_${top["name"]} #(
 % if target["name"] in ["cw310", "cw340"]:
-    .SecAesMasking(1'b0),
-    .SecAesSBoxImpl(aes_pkg::SBoxImplLut),
-    .SecAesStartTriggerDelay(320),
-    .SecAesAllowForcingMasks(1'b1),
     .KmacEnMasking(1),
     .KmacSwKeyMasked(1),
     .SecKmacCmdDelay(320),
@@ -1278,11 +1274,11 @@ module chip_${top["name"]}_${target["name"]} #(
   clkmgr_pkg::hint_names_e trigger_sel;
   always_comb begin : trigger_sel_mux
     unique case ({mio_out[MioOutGpioGpio11], mio_out[MioOutGpioGpio10]})
-      2'b00:   trigger_sel = clkmgr_pkg::HintMainAes;
-      2'b01:   trigger_sel = clkmgr_pkg::HintMainHmac;
+      2'b00,
+      2'b01,
       2'b10:   trigger_sel = clkmgr_pkg::HintMainKmac;
       2'b11:   trigger_sel = clkmgr_pkg::HintMainOtbn;
-      default: trigger_sel = clkmgr_pkg::HintMainAes;
+      default: trigger_sel = clkmgr_pkg::HintMainKmac;
     endcase;
   end
   assign clk_trans_idle = top_${top["name"]}.clkmgr_aon_idle[trigger_sel];
