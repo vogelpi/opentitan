@@ -693,23 +693,6 @@
  */
 #define TOP_EARLGREY_KMAC_SIZE_BYTES 0x1000
 /**
- * Peripheral base address for otbn in top earlgrey.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_EARLGREY_OTBN_BASE_ADDR 0x41130000
-
-/**
- * Peripheral size for otbn in top earlgrey.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_EARLGREY_OTBN_BASE_ADDR and
- * `TOP_EARLGREY_OTBN_BASE_ADDR + TOP_EARLGREY_OTBN_SIZE_BYTES`.
- */
-#define TOP_EARLGREY_OTBN_SIZE_BYTES 0x10000
-/**
  * Peripheral base address for keymgr in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped

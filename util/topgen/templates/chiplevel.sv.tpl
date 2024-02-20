@@ -1107,10 +1107,6 @@ module chip_${top["name"]}_${target["name"]} #(
     .SecKmacIdleAcceptSwMsg(1'b1),
     .KeymgrKmacEnMasking(1),
     .CsrngSBoxImpl(aes_pkg::SBoxImplLut),
-    .OtbnRegFile(otbn_pkg::RegFileFPGA),
-    .OtbnStub(1'b1),
-    .SecOtbnMuteUrnd(1'b1),
-    .SecOtbnSkipUrndReseedAtStart(1'b1),
     .OtpCtrlMemInitFile(OtpCtrlMemInitFile),
     .RvCoreIbexPipeLine(1),
     .SramCtrlRetAonInstrExec(0),
@@ -1134,8 +1130,6 @@ module chip_${top["name"]}_${target["name"]} #(
     .SramCtrlRetAonInstrExec(0),
     .EntropySrcStub(1'b1),
     .CsrngSBoxImpl(aes_pkg::SBoxImplLut),
-    .OtbnRegFile(otbn_pkg::RegFileFPGA),
-    .OtbnStub(1'b1),
     .OtpCtrlMemInitFile(OtpCtrlMemInitFile),
     .RvCoreIbexPipeLine(1),
 % endif
@@ -1268,21 +1262,7 @@ module chip_${top["name"]}_${target["name"]} #(
 
   prim_mubi_pkg::mubi4_t clk_trans_idle, manual_in_io_clk_idle;
 
-  % if target["name"] == "cw305":
   assign clk_trans_idle = top_${top["name"]}.clkmgr_aon_idle;
-  % else:
-  clkmgr_pkg::hint_names_e trigger_sel;
-  always_comb begin : trigger_sel_mux
-    unique case ({mio_out[MioOutGpioGpio11], mio_out[MioOutGpioGpio10]})
-      2'b00,
-      2'b01,
-      2'b10:   trigger_sel = clkmgr_pkg::HintMainKmac;
-      2'b11:   trigger_sel = clkmgr_pkg::HintMainOtbn;
-      default: trigger_sel = clkmgr_pkg::HintMainKmac;
-    endcase;
-  end
-  assign clk_trans_idle = top_${top["name"]}.clkmgr_aon_idle[trigger_sel];
-  % endif
 
   logic clk_io_div4_trigger_hw_en, manual_in_io_clk_trigger_hw_en;
   logic clk_io_div4_trigger_hw_oe, manual_in_io_clk_trigger_hw_oe;

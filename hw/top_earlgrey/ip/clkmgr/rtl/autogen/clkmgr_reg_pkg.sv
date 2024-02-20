@@ -9,7 +9,7 @@ package clkmgr_reg_pkg;
   // Param list
   parameter int NumGroups = 7;
   parameter int NumSwGateableClocks = 4;
-  parameter int NumHintableClocks = 2;
+  parameter int NumHintableClocks = 1;
   parameter int NumAlerts = 2;
 
   // Address widths within the block
@@ -59,12 +59,7 @@ package clkmgr_reg_pkg;
   } clkmgr_reg2hw_clk_enables_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic        q;
-    } clk_main_otbn_hint;
-    struct packed {
-      logic        q;
-    } clk_main_kmac_hint;
+    logic        q;
   } clkmgr_reg2hw_clk_hints_reg_t;
 
   typedef struct packed {
@@ -153,14 +148,8 @@ package clkmgr_reg_pkg;
   } clkmgr_hw2reg_extclk_status_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic        d;
-      logic        de;
-    } clk_main_kmac_val;
-    struct packed {
-      logic        d;
-      logic        de;
-    } clk_main_otbn_val;
+    logic        d;
+    logic        de;
   } clkmgr_hw2reg_clk_hints_status_reg_t;
 
   typedef struct packed {
@@ -257,11 +246,11 @@ package clkmgr_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    clkmgr_reg2hw_alert_test_reg_t alert_test; // [137:134]
-    clkmgr_reg2hw_extclk_ctrl_reg_t extclk_ctrl; // [133:126]
-    clkmgr_reg2hw_jitter_enable_reg_t jitter_enable; // [125:122]
-    clkmgr_reg2hw_clk_enables_reg_t clk_enables; // [121:118]
-    clkmgr_reg2hw_clk_hints_reg_t clk_hints; // [117:116]
+    clkmgr_reg2hw_alert_test_reg_t alert_test; // [136:133]
+    clkmgr_reg2hw_extclk_ctrl_reg_t extclk_ctrl; // [132:125]
+    clkmgr_reg2hw_jitter_enable_reg_t jitter_enable; // [124:121]
+    clkmgr_reg2hw_clk_enables_reg_t clk_enables; // [120:117]
+    clkmgr_reg2hw_clk_hints_reg_t clk_hints; // [116:116]
     clkmgr_reg2hw_measure_ctrl_regwen_reg_t measure_ctrl_regwen; // [115:115]
     clkmgr_reg2hw_io_meas_ctrl_en_reg_t io_meas_ctrl_en; // [114:111]
     clkmgr_reg2hw_io_meas_ctrl_shadowed_reg_t io_meas_ctrl_shadowed; // [110:91]
@@ -278,8 +267,8 @@ package clkmgr_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    clkmgr_hw2reg_extclk_status_reg_t extclk_status; // [62:59]
-    clkmgr_hw2reg_clk_hints_status_reg_t clk_hints_status; // [58:55]
+    clkmgr_hw2reg_extclk_status_reg_t extclk_status; // [60:57]
+    clkmgr_hw2reg_clk_hints_status_reg_t clk_hints_status; // [56:55]
     clkmgr_hw2reg_measure_ctrl_regwen_reg_t measure_ctrl_regwen; // [54:53]
     clkmgr_hw2reg_io_meas_ctrl_en_reg_t io_meas_ctrl_en; // [52:48]
     clkmgr_hw2reg_io_div2_meas_ctrl_en_reg_t io_div2_meas_ctrl_en; // [47:43]

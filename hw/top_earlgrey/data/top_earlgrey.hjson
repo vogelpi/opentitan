@@ -647,26 +647,6 @@
       reset_connections: {rst_ni: "lc", rst_edn_ni: "lc"},
       base_addr: "0x41120000",
     },
-    { name: "otbn",
-      type: "otbn",
-      clock_srcs: {
-        clk_i: {
-          clock: "main",
-          group: "trans"
-        },
-        clk_edn_i: {
-          clock: "main",
-          group: "secure"
-        },
-        clk_otp_i: {
-          clock: "io_div4",
-          group: "secure"
-        },
-      },
-      clock_group: "trans",
-      reset_connections: {rst_ni: "lc", rst_edn_ni: "lc", rst_otp_ni: "lc_io_div4"},
-      base_addr: "0x41130000",
-    },
     { name: "keymgr",
       type: "keymgr",
       clock_srcs: {clk_i: "main", clk_edn_i: "main"},
@@ -876,8 +856,7 @@
     'connect': {
       'ast.obs_ctrl'            : ['flash_ctrl.obs_ctrl',
                                    'otp_ctrl.obs_ctrl'],
-      'ast.ram_1p_cfg'          : ['otbn.ram_cfg',
-                                   'sram_ctrl_main.cfg',
+      'ast.ram_1p_cfg'          : ['sram_ctrl_main.cfg',
                                    'sram_ctrl_ret_aon.cfg',
                                    'rv_core_ibex.ram_cfg'],
       'ast.spi_ram_2p_cfg'      : ['spi_device.ram_cfg'],
@@ -917,10 +896,8 @@
       'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],
       'csrng.entropy_src_hw_if' : ['entropy_src.entropy_src_hw_if'],
 
-      // Daisy chained LC RMA req/ack interface: LC -> Flash -> OTBN -> LC
       'lc_ctrl.lc_flash_rma_req' : ['flash_ctrl.rma_req'],
-      'flash_ctrl.rma_ack'       : ['otbn.lc_rma_req'],
-      'otbn.lc_rma_ack'          : ['lc_ctrl.lc_flash_rma_ack'],
+      'flash_ctrl.rma_ack'       : ['lc_ctrl.lc_flash_rma_ack'],
 
       // usbdev connection to pinmux
       'usbdev.usb_dp_pullup'      : ['pinmux_aon.usbdev_dppullup_en'],
@@ -933,17 +910,12 @@
 
       // Edn connections
       'edn0.edn'              : ['keymgr.edn', 'otp_ctrl.edn', 'ast.edn', 'kmac.entropy',
-                                 'alert_handler.edn', 'otbn.edn_urnd',
+                                 'alert_handler.edn',
                                  'rv_core_ibex.edn'],
-      'edn1.edn'              : ['otbn.edn_rnd'],
-
-      // OTBN OTP scramble key
-      'otp_ctrl.otbn_otp_key' : ['otbn.otbn_otp_key'],
 
       // KeyMgr Sideload & KDF function
       'otp_ctrl.otp_keymgr_key' : ['keymgr.otp_key'],
       'keymgr.kmac_key'         : ['kmac.keymgr_key'],
-      'keymgr.otbn_key'         : ['otbn.keymgr_key'],
 
       // KMAC Application Interface
       'kmac.app'                : ['keymgr.kmac_data',    // Keymgr needs to be at index 0
@@ -989,7 +961,6 @@
       'lc_ctrl.lc_cpu_en'          : ['rv_core_ibex.lc_cpu_en'],
       'lc_ctrl.lc_keymgr_en'       : ['keymgr.lc_keymgr_en'],
       'lc_ctrl.lc_escalate_en'     : ['kmac.lc_escalate_en',
-                                      'otbn.lc_escalate_en',
                                       'otp_ctrl.lc_escalate_en',
                                       'sram_ctrl_main.lc_escalate_en',
                                       'sram_ctrl_ret_aon.lc_escalate_en',

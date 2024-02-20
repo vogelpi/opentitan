@@ -86,7 +86,6 @@
       edn0
       edn1
       rv_plic
-      otbn
       keymgr
       kmac
       sram_ctrl_main.regs
@@ -111,7 +110,6 @@
       edn0
       edn1
       rv_plic
-      otbn
       keymgr
       kmac
       sram_ctrl_main.regs
@@ -476,25 +474,6 @@
         {
           base_addr: 0x48000000
           size_byte: 0x8000000
-        }
-      ]
-      xbar: false
-      stub: false
-      pipeline: true
-    }
-    {
-      name: otbn
-      type: device
-      clock: clk_main_i
-      reset: rst_main_ni
-      req_fifo_pass: false
-      rsp_fifo_pass: false
-      inst_type: otbn
-      addr_range:
-      [
-        {
-          base_addr: 0x41130000
-          size_byte: 0x10000
         }
       ]
       xbar: false

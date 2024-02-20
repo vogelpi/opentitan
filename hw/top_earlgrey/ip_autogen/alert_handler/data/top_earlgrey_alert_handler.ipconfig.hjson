@@ -5,7 +5,7 @@
   instance_name: top_earlgrey_alert_handler
   param_values:
   {
-    n_alerts: 62
+    n_alerts: 60
     esc_cnt_dw: 32
     accu_cnt_dw: 16
     async_on:
@@ -70,11 +70,9 @@
       1'b1
       1'b1
       1'b1
-      1'b1
-      1'b1
     ]
     n_classes: 4
-    n_lpg: 22
+    n_lpg: 21
     lpg_map:
     [
       5'd0
@@ -121,8 +119,6 @@
       5'd19
       5'd20
       5'd20
-      5'd21
-      5'd21
       5'd19
       5'd19
       5'd19
