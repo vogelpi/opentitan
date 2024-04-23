@@ -23,7 +23,7 @@ pub fn create<B: Board + 'static>(args: &BackendOpts) -> Result<Box<dyn Transpor
         .uarts
         .as_ref()
         .map(|v| v.split(',').collect::<Vec<&str>>())
-        .unwrap_or_default();
+        .unwrap_or(vec!("/dev/ttyACM5", "/dev/ttyACM4"));
 
     Ok(Box::new(ChipWhisperer::<B>::new(
         args.usb_vid,
