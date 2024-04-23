@@ -9,6 +9,7 @@ NONHERMETIC_ENV_VARS = [
     "XILINX_VIVADO",
     "XILINX_HLS",
     "XILINXD_LICENSE_FILE",
+    "LD_PRELOAD",
 ]
 
 def _nonhermetic_repo_impl(rctx):

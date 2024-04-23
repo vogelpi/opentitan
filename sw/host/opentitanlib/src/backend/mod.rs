@@ -27,7 +27,7 @@ mod verilator;
 #[derive(Debug, Args)]
 pub struct BackendOpts {
     /// Name of the debug interface.
-    #[arg(long, default_value = "")]
+    #[arg(long, default_value = "cw310")]
     pub interface: String,
 
     /// Whether to disable DFT with a strapping config during reset. Only required in TestUnlocked*
