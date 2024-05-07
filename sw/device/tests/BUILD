@@ -5569,3 +5569,34 @@ opentitan_test(
         "//sw/device/lib/testing/test_framework:ottf_utils",
     ],
 )
+
+opentitan_test(
+    name = "entropy_complex_dbg",
+    srcs = ["entropy_complex_dbg.c"],
+    cw310 = cw310_params(
+        otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_prod_manuf_personalized",
+    ),
+    dv = dv_params(
+        otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_prod_manuf_personalized",
+    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:sim_dv": None,
+    },
+    deps = [
+        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:flash_ctrl_testutils",
+        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:status",
+        "//sw/device/silicon_creator/lib:otbn_boot_services",
+        "//sw/device/silicon_creator/lib/drivers:keymgr",
+        "//sw/device/silicon_creator/lib/drivers:kmac",
+    ],
+)
