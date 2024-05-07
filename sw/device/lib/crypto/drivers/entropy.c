@@ -246,7 +246,7 @@ static const entropy_complex_config_t
                 .edn0 =
                     {
                         .base_address = kBaseEdn0,
-                        .reseed_interval = 128,
+                        .reseed_interval = 32,
                         .instantiate =
                             {
                                 .id = kEntropyDrbgOpInstantiate,
@@ -259,7 +259,7 @@ static const entropy_complex_config_t
                                 .id = kEntropyDrbgOpGenerate,
                                 .disable_trng_input = kHardenedBoolFalse,
                                 .seed_material = NULL,
-                                .generate_len = 32,
+                                .generate_len = 8,
                             },
                         .reseed =
                             {
@@ -284,7 +284,7 @@ static const entropy_complex_config_t
                             {
                                 .id = kEntropyDrbgOpGenerate,
                                 .seed_material = NULL,
-                                .generate_len = 4,
+                                .generate_len = 1,
                             },
                         .reseed =
                             {
