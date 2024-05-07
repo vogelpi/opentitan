@@ -2099,6 +2099,16 @@
       sw_images: ["//sw/device/tests:flash_ctrl_mem_protection_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
+    {
+      name: chip_sw_entropy_complex_dbg
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: [
+        "//sw/device/tests:entropy_complex_dbg:1:new_rules",
+        "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_prod_manuf_personalized:4",
+      ]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+use_otp_image=OtpTypeCustom"]
+    }
   ]
 
   // List of regressions.
