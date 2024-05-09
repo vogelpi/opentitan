@@ -82,6 +82,11 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_rstmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
 
+  // Set keymgr reseed interval. Start with the maximum value to avoid
+  // entropy complex contention during the boot process.
+  const uint16_t kScKeymgrEntropyReseedInterval = 1;
+  sc_keymgr_entropy_reseed_interval_set(kScKeymgrEntropyReseedInterval);
+
   // Get reset reason.
   dif_rstmgr_reset_info_bitfield_t reason;
   reason = rstmgr_testutils_reason_get();
@@ -131,6 +136,7 @@ bool test_main(void) {
         OTP_CTRL_PARAM_SRAM_DATA_KEY_SEED_SIZE / sizeof(uint32_t),
         /*fips_check=*/kHardenedBoolTrue));
     CHECK_STATUS_OK(entropy_csrng_uninstantiate());
+
     sw_reset();
 
     // Generate entropy to simulate OTP SECRET2 provisioning operations.
@@ -163,6 +169,11 @@ bool test_main(void) {
     sw_reset();
   } else {
     LOG_INFO("Coming out of SW Reset.");
+
+    // Set keymgr reseed interval. Start with the maximum value to avoid
+    // entropy complex contention during the boot process.
+    const uint16_t kScKeymgrEntropyReseedInterval = 1;
+    sc_keymgr_entropy_reseed_interval_set(kScKeymgrEntropyReseedInterval);
 
     // Initialize keymgr binding state (since we are running with the test ROM).
     sc_keymgr_sw_binding_set(&kBindingValueRom, &kBindingValueRom);
