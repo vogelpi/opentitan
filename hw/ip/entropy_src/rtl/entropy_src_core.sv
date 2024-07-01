@@ -3465,6 +3465,13 @@ module entropy_src_core import entropy_src_pkg::*; #(
       precon_post_startup_exp_push_bit_cnt_q  <= precon_post_startup_exp_push_bit_cnt_d;
     end
   end
+
+  // When triggering the conditioner, the precon FIFO must be empty. The postht and distr FIFOs
+  // must have been empty in the cycle before. Otherwise, some entropy bits tested as part of the
+  // current window won't make into the corresponding seed.
+  `ASSERT(FifosEmptyWhenShaProcess_A,
+      $rose(sha3_process) |->
+      $past(!pfifo_postht_not_empty) && $past(!sfifo_distr_not_empty) && !pfifo_precon_not_empty)
 `endif
 
 endmodule
