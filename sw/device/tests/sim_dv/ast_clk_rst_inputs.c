@@ -366,10 +366,6 @@ void ast_enter_sleep_states_and_check_functionality(
   } else if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(
                  &pwrmgr, kDifPwrmgrWakeupRequestSourceTwo)) == true) {
     if (deepsleep) {
-      if (read_fifo_depth(&entropy_src) != 0)
-        LOG_ERROR("read_fifo_depth after reset=%0d should be 0",
-                  read_fifo_depth(&entropy_src));
-
       first_adc_setup = false;
       // Configure ADC after deep sleep
       adc_setup(first_adc_setup);
@@ -416,8 +412,6 @@ void ast_enter_sleep_states_and_check_functionality(
  *  set edn auto mode
  */
 void set_edn_auto_mode(void) {
-  const dif_entropy_src_t entropy_src = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR)};
   const dif_csrng_t csrng = {
       .base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR)};
   const dif_edn_t edn0 = {
@@ -514,6 +508,10 @@ void set_edn_auto_mode(void) {
       .reseed_interval = 4,  // Reseed after every 4 generates.
   };
   CHECK_DIF_OK(dif_edn_set_auto_mode(&edn1, edn1_params));
+
+  // The Observe FIFO has already been filled while producing the seeds for the
+  // EDNs. Empty the FIFO to restart the collection for the actual test.
+  CHECK_STATUS_OK(entropy_testutils_drain_observe_fifo(&entropy_src));
 }
 
 void ottf_external_isr(uint32_t *exc_info) {
