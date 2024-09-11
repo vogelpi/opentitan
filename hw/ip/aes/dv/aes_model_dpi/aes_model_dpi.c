@@ -17,7 +17,8 @@ void c_dpi_aes_crypt_block(const unsigned char impl_i, const unsigned char op_i,
                            const svBitVecVal *mode_i, const svBitVecVal *iv_i,
                            const svBitVecVal *key_len_i,
                            const svBitVecVal *key_i, const svBitVecVal *data_i,
-                           svBitVecVal *data_o) {
+                           const svBitVecVal *aad_i, const svBitVecVal *tag_i,
+                           svBitVecVal *data_o, svBitVecVal *tag_o) {
   // Mask out unused bits as their value is undetermined.
   const unsigned char impl = impl_i & impl_mask;
   const unsigned char op = op_i & op_mask;
@@ -40,6 +41,10 @@ void c_dpi_aes_crypt_block(const unsigned char impl_i, const unsigned char op_i,
   // get input data from simulator
   unsigned char *key = aes_key_get(key_i);
   unsigned char *ref_in = aes_data_get(data_i);
+  int aad_len = 16; // Always use a fixed AAD length of one block (128-bits).
+  unsigned char *aad_in = aes_data_get(data_i);
+  int tag_len = 16; // Always use the default tag size.
+  unsigned char *tag_in = aes_data_get(tag_i);
 
   // Modes other than ECB require an IV from the simulator.
   unsigned char *iv;
@@ -53,6 +58,8 @@ void c_dpi_aes_crypt_block(const unsigned char impl_i, const unsigned char op_i,
   // allocate memory
   unsigned char *ref_out = (unsigned char *)malloc(16 * sizeof(unsigned char));
   assert(ref_out);
+  unsigned char *tag_out = (unsigned char *)malloc(tag_len * sizeof(unsigned char));
+  assert(tag_out);
 
   if (impl == 0) {
     // The C model does ECB only. We "emulate" other modes here.
@@ -92,6 +99,9 @@ void c_dpi_aes_crypt_block(const unsigned char impl_i, const unsigned char op_i,
       for (int i = 0; i < 16; ++i) {
         ref_out[i] = data_out[i] ^ ref_in[i];
       }
+    } else if (mode == kCryptoAesGcm) {
+      printf("ERROR: Mode kCryptoAesGcm only supported in OpenSSL/BoringSSL");
+      return;
     } else {  // ECB
       if (!op) {
         aes_encrypt_block(ref_in, key, key_len, ref_out);
@@ -101,19 +111,24 @@ void c_dpi_aes_crypt_block(const unsigned char impl_i, const unsigned char op_i,
     }
   } else {  // OpenSSL/BoringSSL
     if (!op) {
-      crypto_encrypt(ref_out, iv, ref_in, 16, key, key_len, mode);
+      crypto_encrypt(ref_out, iv, ref_in, 16, key, key_len, mode, aad_in, aad_len,
+        tag_out, tag_len);
     } else {
-      crypto_decrypt(ref_out, iv, ref_in, 16, key, key_len, mode);
+      crypto_decrypt(ref_out, iv, ref_in, 16, key, key_len, mode, aad_in, aad_len,
+      tag_in, tag_len);
     }
   }
 
   // write output data back to simulator, free ref_out
   aes_data_put(data_o, ref_out);
+  aes_data_put(tag_o, tag_out);
 
   // free memory
   free(iv);
   free(key);
   free(ref_in);
+  free(aad_in);
+  free(tag_in);
 
   return;
 }
@@ -123,7 +138,10 @@ void c_dpi_aes_crypt_message(unsigned char impl_i, unsigned char op_i,
                              const svBitVecVal *key_len_i,
                              const svBitVecVal *key_i,
                              const svOpenArrayHandle data_i,
-                             svOpenArrayHandle data_o) {
+                             const svOpenArrayHandle aad_i,
+                             const svBitVecVal *tag_i,
+                             svOpenArrayHandle data_o,
+                             svBitVecVal *tag_o) {
   // Mask out unused bits as their value is undetermined.
   const unsigned char impl = impl_i & impl_mask;
   const unsigned char op = op_i & op_mask;
@@ -143,6 +161,11 @@ void c_dpi_aes_crypt_message(unsigned char impl_i, unsigned char op_i,
   } else {  // 0x4
     key_len = 32;
   }
+
+  int tag_len = 16; // Set tag length to 128-bits. Although other bit sizes are
+                    // supported, the hardware anyways will always generate the
+                    // 128-bits tag and the user can decide to only use some
+                    // a subset of these bits.
 
   if (impl == 0) {
     // The C model is currently not supported.
@@ -172,15 +195,38 @@ void c_dpi_aes_crypt_message(unsigned char impl_i, unsigned char op_i,
     memset(iv, 0, 16);
   }
 
+  unsigned char *tag_in = (unsigned char *)malloc(tag_len * sizeof(unsigned char));
+  assert(tag_in);
+  if (mode == kCryptoAesGcm) {
+    // tag_i is a 1D array of words (4x32bit), but we need 16 bytes.
+    svBitVecVal value;
+    for (int i = 0; i < 4; ++i) {
+      value = tag_i[i];
+      tag_in[4 * i + 0] = (unsigned char)(value >> 0);
+      tag_in[4 * i + 1] = (unsigned char)(value >> 8);
+      tag_in[4 * i + 2] = (unsigned char)(value >> 16);
+      tag_in[4 * i + 3] = (unsigned char)(value >> 24);
+    }
+  } else {
+    memset(tag_in, 0, tag_len);
+  }
+
   // Get message length.
   int data_len = svSize(data_i, 1);
 
+  // Get AAD length.
+  int aad_len = svSize(aad_i, 1);
+
   // Get input data from simulator.
   unsigned char *ref_in = aes_data_unpacked_get(data_i);
+  unsigned char *aad_in = aes_data_unpacked_get(aad_i);
 
-  // Allocate output buffer.
+  // Allocate output buffers.
   unsigned char *ref_out =
       (unsigned char *)malloc(data_len * sizeof(unsigned char));
+  assert(ref_out);
+  unsigned char *tag_out =
+      (unsigned char *)malloc(tag_len * sizeof(unsigned char));
   assert(ref_out);
 
   // OpenSSL/BoringSSL
@@ -198,18 +244,23 @@ void c_dpi_aes_crypt_message(unsigned char impl_i, unsigned char op_i,
         "only\n");
   } else {  // OpenSSL/BoringSSL
     if (!op) {
-      crypto_encrypt(ref_out, iv, ref_in, data_len, key, key_len, mode);
+      crypto_encrypt(ref_out, iv, ref_in, data_len, key, key_len, mode, aad_in, aad_len,
+        tag_out, tag_len);
     } else {
-      crypto_decrypt(ref_out, iv, ref_in, data_len, key, key_len, mode);
+      crypto_decrypt(ref_out, iv, ref_in, data_len, key, key_len, mode, aad_in, aad_len,
+        tag_in, tag_len);
     }
   }
 
-  // Write output data back to simulator, free ref_out.
+  // Write output data back to simulator, free ref_out & tag_out.
   aes_data_unpacked_put(data_o, ref_out);
+  aes_data_put(tag_o, tag_out);
 
   // Free memory.
   free(iv);
   free(key);
+  free(aad_in);
+  free(tag_in);
 }
 
 void c_dpi_aes_sub_bytes(const unsigned char op_i, const svBitVecVal *data_i,

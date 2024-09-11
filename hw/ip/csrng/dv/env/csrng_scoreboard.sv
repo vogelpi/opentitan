@@ -442,7 +442,10 @@ class csrng_scoreboard extends cip_base_scoreboard #(
                            .iv_i('h0),
                            .key_i(key),
                            .data_i(input_block),
-                           .data_o(output_block));
+                           .aad_i('h0),
+                           .tag_i('h0),
+                           .data_o(output_block),
+                           .tag_o());
     return output_block;
   endfunction
 

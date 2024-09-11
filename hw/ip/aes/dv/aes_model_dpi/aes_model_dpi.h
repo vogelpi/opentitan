@@ -25,42 +25,54 @@ extern "C" {
  *
  * @param  impl_i    Select reference impl.: 0 = C model, 1 = OpenSSL/BoringSSL
  * @param  op_i      Operation: 0 = encrypt, 1 = decrypt
- * @param  mode_i    Cipher mode: 6'b00_0001 = ECB, 6'00_b0010 = CBC,
- *                                6'b00_0100 = CFB, 6'b00_1000 = OFB,
- *                                6'b01_0000 = CTR, 6'b10_0000 = NONE
+ * @param  mode_i    Cipher mode: 7'b000_0001 = ECB, 7'000_b0010 = CBC,
+ *                                7'b000_0100 = CFB, 7'b000_1000 = OFB,
+ *                                7'b001_0000 = CTR, 7'b010_0000 = GCM,
+ *                                7'b010_0000 = NONE
  * @param  iv_i      Initialization vector: 2D matrix (3D packed array in SV)
  * @param  key_len_i Key length: 3'b001 = 128b, 3'b010 = 192b, 3'b100 = 256b
  * @param  key_i     Full input key, 1D array of words (2D packed array in SV)
  * @param  data_i    Input data, 2D state matrix (3D packed array in SV)
+ * @param  aad_i     Input AAD, 2D state matrix (3D packed array in SV)
+ * @param  tag_i     Input auth. tag, 2D state matrix (3D packed array in SV)
  * @param  data_o    Output data, 2D state matrix (3D packed array in SV)
+ * @param  tag_o     Output auth. tag, 2D state matrix (3D packed array in SV)
  */
 void c_dpi_aes_crypt_block(const unsigned char impl_i, const unsigned char op_i,
                            const svBitVecVal *mode_i, const svBitVecVal *iv_i,
                            const svBitVecVal *key_len_i,
                            const svBitVecVal *key_i, const svBitVecVal *data_i,
-                           svBitVecVal *data_o);
+                           const svBitVecVal *aad_i, const svBitVecVal *tag_i,
+                           svBitVecVal *data_o, svBitVecVal *tag_o);
 
 /**
  * Perform encryption/decryption of an entire message using OpenSSL/BoringSSL.
  *
  * @param  impl_i    Select reference impl.: 0 = C model, 1 = OpenSSL/BoringSSL
  * @param  op_i      Operation: 0 = encrypt, 1 = decrypt
- * @param  mode_i    Cipher mode: 6'b00_0001 = ECB, 6'00_b0010 = CBC,
- *                                6'b00_0100 = CFB, 6'b00_1000 = OFB,
- *                                6'b01_0000 = CTR, 6'b10_0000 = NONE
+ * @param  mode_i    Cipher mode: 7'b000_0001 = ECB, 7'000_b0010 = CBC,
+ *                                7'b000_0100 = CFB, 7'b000_1000 = OFB,
+ *                                7'b001_0000 = CTR, 7'b010_0000 = GCM,
+ *                                7'b010_0000 = NONE
  * @param  iv_i      Initialization vector: 1D array of words (2D packed array
  *                   in SV)
  * @param  key_len_i Key length: 3'b001 = 128b, 3'b010 = 192b, 3'b100 = 256b
  * @param  key_i     Full input key, 1D array of words (2D packed array in SV)
  * @param  data_i    Input data, 1D byte array (open array in SV)
+ * @param  aad_i     Input AAD, 1D byte array (open array in SV)
+ * @param  tag_i     Input auth. tag, 1D array of words (2D packed array in SV)
  * @param  data_o    Output data, 1D byte array (open array in SV)
+ * @param  tag_o     Output auth. tag, 2D state matrix (3D packed array in SV)
  */
 void c_dpi_aes_crypt_message(unsigned char impl_i, unsigned char op_i,
                              const svBitVecVal *mode_i, const svBitVecVal *iv_i,
                              const svBitVecVal *key_len_i,
                              const svBitVecVal *key_i,
                              const svOpenArrayHandle data_i,
-                             svOpenArrayHandle data_o);
+                             const svOpenArrayHandle aad_i,
+                             const svBitVecVal *tag_i,
+                             svOpenArrayHandle data_o,
+                             svBitVecVal *tag_o);
 
 /**
  * Perform sub bytes operation for forward/inverse cipher operation.
