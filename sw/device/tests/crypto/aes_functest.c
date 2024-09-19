@@ -27,7 +27,11 @@ static const aes_test_t *test = NULL;
 enum {
   kAesBlockBytes = 128 / 8,
   kAesBlockWords = kAesBlockBytes / sizeof(uint32_t),
+  kLongMessageNumBlocks = 256,
+  kLongMessageNumWords = kLongMessageNumBlocks * kAesBlockBytes / sizeof(uint32_t),
 };
+
+static const size_t kLongMessageLen = kLongMessageNumBlocks * kAesBlockBytes;
 
 static otcrypto_key_config_t make_key_config(const aes_test_t *test) {
   otcrypto_key_mode_t key_mode;
@@ -265,6 +269,79 @@ bool test_main(void) {
     EXECUTE_TEST(result, decrypt_streaming_test);
     LOG_INFO("Finished AES test %d.", i + 1);
   }
+
+  // Test one long message in CTR mode to measure the performance.
+
+  // Construct blinded key from the key and testing mask.
+  otcrypto_key_config_t key_config = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kOtcryptoKeyModeAesCtr,
+      .key_length = sizeof(kKey128),
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  uint32_t keyblob[keyblob_num_words(key_config)];
+  CHECK_STATUS_OK(keyblob_from_key_and_mask(kKey128, kKeyMask, key_config, keyblob));
+  otcrypto_blinded_key_t key = {
+      .config = key_config,
+      .keyblob_length = sizeof(keyblob),
+      .keyblob = keyblob,
+  };
+  key.checksum = integrity_blinded_checksum(&key);
+
+  // Construct a buffer to hold the IV.
+  uint32_t iv_data[kAesBlockWords];
+  memcpy(iv_data, kIv, kAesBlockBytes);
+  otcrypto_word32_buf_t iv = {
+      .data = iv_data,
+      .len = kAesBlockWords,
+  };
+
+  // Create plaintext/ciphertext buffers.
+  uint32_t plaintext_data[kLongMessageNumWords];
+  uint32_t ciphertext_data[kLongMessageNumWords];
+  uint32_t recovered_plaintext_data[kLongMessageNumWords];
+
+  // Initialize plaintext buffer.
+  for (uint32_t i = 0; i < kLongMessageNumWords; ++i) {
+    plaintext_data[i] = i;
+  }
+
+  LOG_INFO("Starting long message...");
+  // Encrypt the plaintext in one shot.
+  otcrypto_const_byte_buf_t plaintext_buf = {.data = (const unsigned char *)plaintext_data,
+                                             .len = kLongMessageLen};
+  otcrypto_byte_buf_t ciphertext_buf = {.data = (unsigned char *)ciphertext_data,
+                                        .len = kLongMessageLen};
+
+  uint64_t t_start = ibex_mcycle_read();
+  CHECK_STATUS_OK(otcrypto_aes(&key, iv, kOtcryptoAesModeCtr, kOtcryptoAesOperationEncrypt,
+                   plaintext_buf, kOtcryptoAesPaddingNull, ciphertext_buf));
+
+  uint64_t cycles = ibex_mcycle_read() - t_start;
+  uint32_t clock_mhz = (uint32_t)kClockFreqCpuHz / 1000000;
+  uint32_t throughput = (uint32_t)kLongMessageLen * 8 * clock_mhz / (uint32_t)cycles;
+  LOG_INFO("Encryption throughput: %u Mbit/s @ %u MHz.", throughput, clock_mhz);
+
+  // Decrypt the ciphertext in one shot.
+  otcrypto_const_byte_buf_t decrypt_ciphertext_buf = {.data = (const unsigned char *)ciphertext_data,
+                                             .len = kLongMessageLen};
+  otcrypto_byte_buf_t recovered_plaintext_buf = {.data = (unsigned char *)recovered_plaintext_data,
+                                        .len = kLongMessageLen};
+  memcpy(iv_data, kIv, kAesBlockBytes);
+
+  t_start = ibex_mcycle_read();
+  CHECK_STATUS_OK(otcrypto_aes(&key, iv, kOtcryptoAesModeCtr, kOtcryptoAesOperationDecrypt,
+                   decrypt_ciphertext_buf, kOtcryptoAesPaddingNull, recovered_plaintext_buf));
+
+  cycles = ibex_mcycle_read() - t_start;
+  clock_mhz = (uint32_t)kClockFreqCpuHz / 1000000;
+  throughput = (uint32_t)kLongMessageLen * 8 * clock_mhz / (uint32_t)cycles;
+  LOG_INFO("Decryption throughput: %u Mbit/s @ %u MHz.", throughput, clock_mhz);
+
+  // Check the result.
+  CHECK_ARRAYS_EQ((unsigned char *)recovered_plaintext_data,
+                      (unsigned char *)plaintext_data, kLongMessageNumBlocks);
 
   return status_ok(result);
 }
