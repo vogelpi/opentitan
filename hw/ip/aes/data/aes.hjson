@@ -1010,7 +1010,8 @@
             desc: '''
               7'b000_0001: Initialization phase.
               Software configures the Initial Key and IV Registers.
-              The hardware then generates the hash subkey and loads it into the internal GHASH block.
+              The hardware then performs two encryption operations to 1) generate the hash subkey and 2) encrypt the IV.
+              Both results are loaded into the internal GHASH block.
               Once the AES unit is idle again, software can advance to the next phase.
               Possible next phases are GCM_RESTORE, GCM_AAD and GCM_TEXT.
               Invalid input values, i.e., values with multiple bits set, value 7'b000_0000, and all other values in case GCM is not supported (because disabled at compile time) are mapped to GCM_INIT.
@@ -1054,7 +1055,7 @@
             desc: '''
               7'b010_0000: Length phase.
               Software inputs a single data block containing the length of the AAD and the ciphertext via Input Data Registers.
-              Once the AES unit is idle again, software reads the GHASH output via Output Data Registers and then advances to the next phase.
+              Once the AES unit is idle again, software can advance to the next phase.
               Possible next phase are GCM_INIT and GCM_TAG.
             '''
           },
@@ -1062,7 +1063,7 @@
             name: "GCM_TAG",
             desc: '''
               7'b100_0000: Tag phase.
-              Software inputs again the original IV via IV Registers and the previously read GHASH output via Input Data Registers.
+              Software inputs again the original IV via IV Registers.
               Once the AES unit is idle again, software reads the final integrity tag via Data Out Registers.
               The only possible next phase is GCM_INIT.
             '''
