@@ -277,7 +277,7 @@ localparam int GhashStateWidth = 5;
 typedef enum logic [GhashStateWidth-1:0] {
   GHASH_IDLE  = 5'b11000,
   GHASH_MULT  = 5'b00100,
-  GHASH_OUT_  = 5'b01011,
+  GHASH_OUT   = 5'b01011,
   GHASH_ERROR = 5'b10111
 } aes_ghash_e;
 

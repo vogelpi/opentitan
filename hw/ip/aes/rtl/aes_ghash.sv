@@ -32,6 +32,7 @@ module aes_ghash import aes_pkg::*;
   input  gcm_phase_e           gcm_phase_i,
   input  logic [4:0]           num_valid_bytes_i,
   input  sp2v_e                load_hash_subkey_i,
+  input  logic                 clear_i,
   input  logic                 alert_fatal_i,
   output logic                 alert_o,
 
@@ -50,7 +51,7 @@ module aes_ghash import aes_pkg::*;
   // Parameters
   // The number of cycles must be a power of two and ideally matches the minimum latency of the
   // cipher core which is 56 clock cycles (masked) or 12 clock cycles (unmasked) for AES-128.
-  localparam int unsigned GFMultCycles = SecMasking ? 32 : 8;
+  localparam int unsigned GFMultCycles = (SecSBoxImpl == SBoxImplDom) ? 32 : 8;
 
   // Signals
   logic [GCMDegree-1:0] s_d [NumShares];
@@ -63,7 +64,6 @@ module aes_ghash import aes_pkg::*;
   logic [GCMDegree-1:0] ghash_state_d [NumShares];
   logic [GCMDegree-1:0] ghash_state_q [NumShares];
   logic [GCMDegree-1:0] ghash_state_zero [NumShares];
-  logic [GCMDegree-1:0] ghash_state_load [NumShares];
   logic [GCMDegree-1:0] ghash_state_add [NumShares];
   sp2v_e                ghash_state_we;
   ghash_state_sel_e     ghash_state_sel;
@@ -85,8 +85,8 @@ module aes_ghash import aes_pkg::*;
   always_comb begin : s_mux
     unique case (s_sel)
       S_LOAD:  s_d = cipher_state_done_i;
-      S_CLEAR: s_d = prd_clearing_state_i;
-      default: s_d = prd_clearing_state_i;
+      S_CLEAR: s_d = prd_clearing_i;
+      default: s_d = prd_clearing_i;
     endcase
   end
 
@@ -114,7 +114,7 @@ module aes_ghash import aes_pkg::*;
   // Mask invalid bytes.
   always_comb begin
     for (int i = 0; i < 16; i++) begin
-      ghash_in_valid[i] = num_valid_bytes_i > i ? ghash_in[i] : 8'b0;
+      ghash_in_valid[i] = num_valid_bytes_i > i[4:0] ? ghash_in[i] : 8'b0;
     end
   end
 
@@ -179,8 +179,8 @@ module aes_ghash import aes_pkg::*;
 
   prim_gf_mult #(
     .Width         (GCMDegree),
-    .StagesPerCycle(GCMDegree / 8),
-    .IPoly         (GCMIPoly),
+    .StagesPerCycle(GCMDegree / GFMultCycles),
+    .IPoly         (GCMIPoly)
   ) u_gf_mult (
     .clk_i (clk_i),
     .rst_ni(rst_ni),
