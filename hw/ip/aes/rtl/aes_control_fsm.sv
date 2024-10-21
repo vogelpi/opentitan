@@ -50,11 +50,11 @@ module aes_control_fsm
   input  logic                  [NumRegsData-1:0] data_in_qe_i,
   input  logic                  [NumRegsData-1:0] data_out_re_i,
   output logic                                    data_in_we_o,
-  output logic                                    data_out_we_o,           // Sparsify
+  output logic                                    data_out_we_o,            // Sparsify
 
   // Previous input data register
   output dip_sel_e                                data_in_prev_sel_o,
-  output logic                                    data_in_prev_we_o,       // Sparsify
+  output logic                                    data_in_prev_we_o,        // Sparsify
 
   // Cipher I/O muxes
   output si_sel_e                                 state_in_sel_o,
@@ -62,19 +62,19 @@ module aes_control_fsm
   output add_so_sel_e                             add_state_out_sel_o,
 
   // Counter
-  output logic                                    ctr_incr_o,              // Sparsify
-  input  logic                                    ctr_ready_i,             // Sparsify
-  input  logic                 [NumSlicesCtr-1:0] ctr_we_i,                // Sparsify
+  output logic                                    ctr_incr_o,               // Sparsify
+  input  logic                                    ctr_ready_i,              // Sparsify
+  input  logic                 [NumSlicesCtr-1:0] ctr_we_i,                 // Sparsify
 
   // Cipher core control and sync
-  output logic                                    cipher_in_valid_o,       // Sparsify
-  input  logic                                    cipher_in_ready_i,       // Sparsify
-  input  logic                                    cipher_out_valid_i,      // Sparsify
-  output logic                                    cipher_out_ready_o,      // Sparsify
-  output logic                                    cipher_crypt_o,          // Sparsify
-  input  logic                                    cipher_crypt_i,          // Sparsify
-  output logic                                    cipher_dec_key_gen_o,    // Sparsify
-  input  logic                                    cipher_dec_key_gen_i,    // Sparsify
+  output logic                                    cipher_in_valid_o,        // Sparsify
+  input  logic                                    cipher_in_ready_i,        // Sparsify
+  input  logic                                    cipher_out_valid_i,       // Sparsify
+  output logic                                    cipher_out_ready_o,       // Sparsify
+  output logic                                    cipher_crypt_o,           // Sparsify
+  input  logic                                    cipher_crypt_i,           // Sparsify
+  output logic                                    cipher_dec_key_gen_o,     // Sparsify
+  input  logic                                    cipher_dec_key_gen_i,     // Sparsify
   output logic                                    cipher_prng_reseed_o,
   input  logic                                    cipher_prng_reseed_i,
   output logic                                    cipher_key_clear_o,
@@ -82,13 +82,20 @@ module aes_control_fsm
   output logic                                    cipher_data_out_clear_o,
   input  logic                                    cipher_data_out_clear_i,
 
+  // GHASH control and sync
+  output logic                                    ghash_in_valid_o,         // Sparsify
+  input  logic                                    ghash_in_ready_i,         // Sparsify
+  input  logic                                    ghash_out_valid_i,        // Sparsify
+  output logic                                    ghash_out_ready_o,        // Sparsify
+  output logic                                    ghash_load_hash_subkey_o, // Sparsify
+
   // Initial key registers
   output key_init_sel_e                           key_init_sel_o,
-  output logic [NumSharesKey-1:0][NumRegsKey-1:0] key_init_we_o,           // Sparsify
+  output logic [NumSharesKey-1:0][NumRegsKey-1:0] key_init_we_o,            // Sparsify
 
   // IV registers
   output iv_sel_e                                 iv_sel_o,
-  output logic                 [NumSlicesCtr-1:0] iv_we_o,                 // Sparsify
+  output logic                 [NumSlicesCtr-1:0] iv_we_o,                  // Sparsify
 
   // Pseudo-random number generator interface
   output logic                                    prng_update_o,
@@ -264,6 +271,11 @@ module aes_control_fsm
     cipher_prng_reseed_o    = 1'b0;
     cipher_key_clear_o      = 1'b0;
     cipher_data_out_clear_o = 1'b0;
+
+    // GHASH control
+    ghash_in_valid_o         = 1'b0;
+    ghash_out_ready_o        = 1'b0;
+    ghash_load_hash_subkey_o = 1'b0;
 
     // Initial key registers
     key_init_sel_o = sideload_i ? KEY_INIT_KEYMGR : KEY_INIT_INPUT;

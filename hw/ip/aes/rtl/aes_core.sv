@@ -179,6 +179,13 @@ module aes_core
   logic                                       cipher_data_out_clear_busy;
   logic                                       cipher_alert;
 
+  sp2v_e                                      ghash_in_valid;
+  sp2v_e                                      ghash_in_ready;
+  sp2v_e                                      ghash_out_valid;
+  sp2v_e                                      ghash_out_ready;
+  sp2v_e                                      ghash_load_hash_subkey;
+  logic                                       ghash_alert;
+
   // Pseudo-random data for clearing purposes
   logic                [WidthPRDClearing-1:0] prd_clearing [NumSharesKey];
   logic                                       prd_clearing_update;
@@ -530,6 +537,7 @@ module aes_core
     for (genvar s = 0; s < NumShares; s++) begin : gen_state_done_muxed
       assign state_done_muxed[s] =
           (cipher_out_valid == SP2V_HIGH) ? state_done[s] : prd_clearing_state[s];
+          // TODO: don't unmask when forwarding masked data to GHASH (hash subkey + s)
     end
 
     // Avoid aggressive synthesis optimizations.
@@ -561,9 +569,39 @@ module aes_core
   ///////////
   // GHASH //
   ///////////
-  // TODO: Implement and integrate the GHASH block.
-  logic [4:0] unused_num_valid_bytes;
-  assign unused_num_valid_bytes = num_valid_bytes_q;
+
+  // TODO don't instantiate GHASH if AESGCMEnable == 0
+  aes_ghash #(
+    .SecMasking  ( SecMasking  ),
+    .SecSBoxImpl ( SecSBoxImpl )
+  ) u_aes_ghash (
+    .clk_i               ( clk_i                  ),
+    .rst_ni              ( rst_ni                 ),
+
+    .in_valid_i          ( ghash_in_valid         ),
+    .in_ready_o          ( ghash_in_ready         ),
+
+    .out_valid_o         ( ghash_out_valid        ),
+    .out_ready_i         ( ghash_out_ready        ),
+
+    .op_i                ( aes_op_q               ),
+    .gcm_phase_i         ( gcm_phase_q            ),
+    .num_valid_bytes_i   ( num_valid_bytes_q      ),
+    .load_hash_subkey_i  ( ghash_load_hash_subkey ),
+    .clear_i             ( cipher_key_clear       ),
+    .alert_fatal_i       ( alert_fatal_o          ),
+    .alert_o             ( ghash_alert            ),
+
+    .prd_clearing_i      ( prd_clearing_128       ),
+    // TODO check byte order
+    .cipher_state_init_i ( state_init             ),
+    .data_in_prev_i      ( data_in_prev_q         ),
+    .data_out_i          ( data_out_d             ),
+    .cipher_state_done_i ( state_done             ),
+    // TODO add final mux
+    //output logic [GCMDegree-1:0] ghash_state_done_o [NumShares]
+    .ghash_state_done_o  (                        )
+  );
 
   ///////////////////////
   // Control Registers //
@@ -682,6 +720,12 @@ module aes_core
     .cipher_key_clear_i        ( cipher_key_clear_busy                  ),
     .cipher_data_out_clear_o   ( cipher_data_out_clear                  ),
     .cipher_data_out_clear_i   ( cipher_data_out_clear_busy             ),
+
+    .ghash_in_valid_o          ( ghash_in_valid                         ),
+    .ghash_in_ready_i          ( ghash_in_ready                         ),
+    .ghash_out_valid_i         ( ghash_out_valid                        ),
+    .ghash_out_ready_o         ( ghash_out_ready                        ),
+    .ghash_load_hash_subkey_o  ( ghash_load_hash_subkey                 ),
 
     .key_init_sel_o            ( key_init_sel_ctrl                      ),
     .key_init_we_o             ( key_init_we_ctrl                       ),
@@ -964,6 +1008,7 @@ module aes_core
   assign alert_fatal_o = ctrl_err_storage |
                          ctr_alert        |
                          cipher_alert     |
+                         ghash_alert      |
                          ctrl_alert       |
                          intg_err_alert_i;
 

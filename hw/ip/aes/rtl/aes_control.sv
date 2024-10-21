@@ -82,6 +82,13 @@ module aes_control
   output logic                      cipher_data_out_clear_o,
   input  logic                      cipher_data_out_clear_i,
 
+  // GHASH control and sync
+  output sp2v_e                     ghash_in_valid_o,
+  input  sp2v_e                     ghash_in_ready_i,
+  input  sp2v_e                     ghash_out_valid_i,
+  output sp2v_e                     ghash_out_ready_o,
+  output sp2v_e                     ghash_load_hash_subkey_o,
+
   // Initial key registers
   output key_init_sel_e             key_init_sel_o,
   output sp2v_e    [NumRegsKey-1:0] key_init_we_o [NumSharesKey],
@@ -155,6 +162,8 @@ module aes_control
   sp2v_e                         cipher_out_valid;
   sp2v_e                         cipher_crypt;
   sp2v_e                         cipher_dec_key_gen;
+  sp2v_e                         ghash_in_ready;
+  sp2v_e                         ghash_out_valid;
   logic                          mux_sel_err;
   logic                          mr_err;
   logic                          sp_enc_err;
@@ -173,6 +182,11 @@ module aes_control
   logic          [Sp2VWidth-1:0] sp_out_cipher_crypt;
   logic          [Sp2VWidth-1:0] sp_in_cipher_dec_key_gen;
   logic          [Sp2VWidth-1:0] sp_out_cipher_dec_key_gen;
+  logic          [Sp2VWidth-1:0] sp_ghash_in_valid;
+  logic          [Sp2VWidth-1:0] sp_ghash_in_ready;
+  logic          [Sp2VWidth-1:0] sp_ghash_out_valid;
+  logic          [Sp2VWidth-1:0] sp_ghash_out_ready;
+  logic          [Sp2VWidth-1:0] sp_ghash_load_hash_subkey;
 
   // Multi-rail signals. These are outputs of the single-rail FSMs and need combining.
   logic          [Sp2VWidth-1:0] mr_ctrl_we;
@@ -243,6 +257,8 @@ module aes_control
   assign sp_cipher_out_valid      = {cipher_out_valid};
   assign sp_in_cipher_crypt       = {cipher_crypt};
   assign sp_in_cipher_dec_key_gen = {cipher_dec_key_gen};
+  assign sp_ghash_in_ready        = {ghash_in_ready};
+  assign sp_ghash_out_valid       = {ghash_out_valid};
 
   // SEC_CM: MAIN.FSM.REDUN
   // For every bit in the Sp2V signals, one separate rail is instantiated. The inputs and outputs
@@ -312,6 +328,12 @@ module aes_control
         .cipher_key_clear_i        ( cipher_key_clear_i            ),
         .cipher_data_out_clear_o   ( mr_cipher_data_out_clear[i]   ), // OR-combine
         .cipher_data_out_clear_i   ( cipher_data_out_clear_i       ),
+
+        .ghash_in_valid_o          ( sp_ghash_in_valid[i]          ), // Sparsified
+        .ghash_in_ready_i          ( sp_ghash_in_ready[i]          ), // Sparsified
+        .ghash_out_valid_i         ( sp_ghash_out_valid[i]         ), // Sparsified
+        .ghash_out_ready_o         ( sp_ghash_out_ready[i]         ), // Sparsified
+        .ghash_load_hash_subkey_o  ( sp_ghash_load_hash_subkey[i]  ), // Sparsified
 
         .key_init_sel_o            ( mr_key_init_sel[i]            ), // OR-combine
         .key_init_we_o             ( int_key_init_we[i]            ), // Sparsified
@@ -406,6 +428,12 @@ module aes_control
         .cipher_data_out_clear_o   ( mr_cipher_data_out_clear[i]   ), // OR-combine
         .cipher_data_out_clear_i   ( cipher_data_out_clear_i       ),
 
+        .ghash_in_valid_no         ( sp_ghash_in_valid[i]          ), // Sparsified
+        .ghash_in_ready_ni         ( sp_ghash_in_ready[i]          ), // Sparsified
+        .ghash_out_valid_ni        ( sp_ghash_out_valid[i]         ), // Sparsified
+        .ghash_out_ready_no        ( sp_ghash_out_ready[i]         ), // Sparsified
+        .ghash_load_hash_subkey_no ( sp_ghash_load_hash_subkey[i]  ), // Sparsified
+
         .key_init_sel_o            ( mr_key_init_sel[i]            ), // OR-combine
         .key_init_we_no            ( int_key_init_we[i]            ), // Sparsified
 
@@ -438,13 +466,16 @@ module aes_control
   end
 
   // Convert sparsified outputs to sp2v_e type.
-  assign data_out_we_o        = sp2v_e'(sp_data_out_we);
-  assign data_in_prev_we_o    = sp2v_e'(sp_data_in_prev_we);
-  assign ctr_incr_o           = sp2v_e'(sp_ctr_incr);
-  assign cipher_in_valid_o    = sp2v_e'(sp_cipher_in_valid);
-  assign cipher_out_ready_o   = sp2v_e'(sp_cipher_out_ready);
-  assign cipher_crypt_o       = sp2v_e'(sp_out_cipher_crypt);
-  assign cipher_dec_key_gen_o = sp2v_e'(sp_out_cipher_dec_key_gen);
+  assign data_out_we_o            = sp2v_e'(sp_data_out_we);
+  assign data_in_prev_we_o        = sp2v_e'(sp_data_in_prev_we);
+  assign ctr_incr_o               = sp2v_e'(sp_ctr_incr);
+  assign cipher_in_valid_o        = sp2v_e'(sp_cipher_in_valid);
+  assign cipher_out_ready_o       = sp2v_e'(sp_cipher_out_ready);
+  assign cipher_crypt_o           = sp2v_e'(sp_out_cipher_crypt);
+  assign cipher_dec_key_gen_o     = sp2v_e'(sp_out_cipher_dec_key_gen);
+  assign ghash_in_valid_o         = sp2v_e'(sp_ghash_in_valid);
+  assign ghash_out_ready_o        = sp2v_e'(sp_ghash_out_ready);
+  assign ghash_load_hash_subkey_o = sp2v_e'(sp_ghash_load_hash_subkey);
 
   // Combine single-bit FSM outputs.
   // OR: One bit is sufficient to drive the corresponding output bit high.
@@ -529,7 +560,7 @@ module aes_control
   // data_out_we_o and other write-enable signals to prevent any data from being released.
 
   // We use vectors of sparsely encoded signals to reduce code duplication.
-  localparam int unsigned NumSp2VSig = 5 + NumSlicesCtr;
+  localparam int unsigned NumSp2VSig = 7 + NumSlicesCtr;
   sp2v_e [NumSp2VSig-1:0]                sp2v_sig;
   sp2v_e [NumSp2VSig-1:0]                sp2v_sig_chk;
   logic  [NumSp2VSig-1:0][Sp2VWidth-1:0] sp2v_sig_chk_raw;
@@ -539,9 +570,11 @@ module aes_control
   assign sp2v_sig[1] = cipher_out_valid_i;
   assign sp2v_sig[2] = cipher_crypt_i;
   assign sp2v_sig[3] = cipher_dec_key_gen_i;
-  assign sp2v_sig[4] = ctr_ready_i;
+  assign sp2v_sig[4] = ghash_in_ready_i;
+  assign sp2v_sig[5] = ghash_out_valid_i;
+  assign sp2v_sig[6] = ctr_ready_i;
   for (genvar i = 0; i < NumSlicesCtr; i++) begin : gen_use_ctr_we_i
-    assign sp2v_sig[5+i] = ctr_we_i[i];
+    assign sp2v_sig[7+i] = ctr_we_i[i];
   end
 
   // All signals inside sp2v_sig are driven and consumed by multi-rail FSMs.
@@ -567,9 +600,11 @@ module aes_control
   assign cipher_out_valid   = sp2v_sig_chk[1];
   assign cipher_crypt       = sp2v_sig_chk[2];
   assign cipher_dec_key_gen = sp2v_sig_chk[3];
-  assign ctr_ready          = sp2v_sig_chk[4];
+  assign ghash_in_ready     = sp2v_sig_chk[4];
+  assign ghash_out_valid    = sp2v_sig_chk[5];
+  assign ctr_ready          = sp2v_sig_chk[6];
   for (genvar i = 0; i < NumSlicesCtr; i++) begin : gen_ctr_we
-    assign ctr_we[i]        = sp2v_sig_chk[5+i];
+    assign ctr_we[i]        = sp2v_sig_chk[7+i];
   end
 
   // Collect encoding errors.
