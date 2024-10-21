@@ -10,6 +10,8 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/impl/status.h"
 
+#include "sw/device/lib/runtime/log.h"
+
 #include "hmac_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -397,12 +399,24 @@ status_t hmac_update(hmac_ctx_t *ctx, const uint8_t *data, size_t len) {
   // Keep writing incoming bytes
   msg_fifo_write(data, len - leftover_len);
 
+  // delay here, even  this small is enough
+  for (size_t i = 0; i < 40; i = launder32(i + 1))
+    ;
+
+  uint32_t status_reg = abs_mmio_read32(kHmacBaseAddr + HMAC_STATUS_REG_OFFSET);
+  uint32_t err_code = abs_mmio_read32(kHmacBaseAddr + HMAC_ERR_CODE_REG_OFFSET);
+  uint32_t msg_len = abs_mmio_read32(kHmacBaseAddr + HMAC_MSG_LENGTH_LOWER_REG_OFFSET);
+  
   // Time to tell HMAC HWIP to stop, because we do not have enough message
   // bytes for another round.
   uint32_t cmd_reg =
       bitfield_bit32_write(HMAC_CMD_REG_RESVAL, HMAC_CMD_HASH_STOP_BIT, 1);
   abs_mmio_write32(kHmacBaseAddr + HMAC_CMD_REG_OFFSET, cmd_reg);
-
+  
+  LOG_INFO("status_reg %x", status_reg);
+  LOG_INFO("err_code %x", err_code);
+  LOG_INFO("msg_len %u", msg_len);
+  
   // Wait for HMAC HWIP operation to be completed.
   HARDENED_TRY(hmac_idle_wait());
 
