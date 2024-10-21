@@ -127,28 +127,31 @@ module aes_ghash
   output logic [NumRegsData-1:0][31:0] ghash_state_done_o [NumShares]
 );
 
+  // For now, this implementation is always unmasked.
+  localparam int NumSharesLocal = 1;
+
   // Parameters
   // The number of cycles must be a power of two and ideally matches the minimum latency of the
   // cipher core which is 56 clock cycles (masked) or 12 clock cycles (unmasked) for AES-128.
   localparam int unsigned GFMultCycles = (SecSBoxImpl == SBoxImplDom) ? 32 : 8;
 
   // Signals
-  logic [GCMDegree-1:0] s_d [NumShares];
-  logic [GCMDegree-1:0] s_q [NumShares];
+  logic [GCMDegree-1:0] s_d [NumSharesLocal];
+  logic [GCMDegree-1:0] s_q [NumSharesLocal];
   sp2v_e                s_we;
   s_sel_e               s_sel;
   logic [15:0][7:0]     ghash_in;
   logic [15:0][7:0]     ghash_in_valid;
   ghash_in_sel_e        ghash_in_sel;
-  logic [GCMDegree-1:0] ghash_state_d [NumShares];
-  logic [GCMDegree-1:0] ghash_state_q [NumShares];
-  logic [GCMDegree-1:0] ghash_state_zero [NumShares];
-  logic [GCMDegree-1:0] ghash_state_add [NumShares];
+  logic [GCMDegree-1:0] ghash_state_d [NumSharesLocal];
+  logic [GCMDegree-1:0] ghash_state_q [NumSharesLocal];
+  logic [GCMDegree-1:0] ghash_state_zero [NumSharesLocal];
+  logic [GCMDegree-1:0] ghash_state_add [NumSharesLocal];
   sp2v_e                ghash_state_we;
   ghash_state_sel_e     ghash_state_sel;
-  logic [GCMDegree-1:0] ghash_state_mult [NumShares];
-  logic [GCMDegree-1:0] hash_subkey_d [NumShares];
-  logic [GCMDegree-1:0] hash_subkey_q [NumShares];
+  logic [GCMDegree-1:0] ghash_state_mult [NumSharesLocal];
+  logic [GCMDegree-1:0] hash_subkey_d [NumSharesLocal];
+  logic [GCMDegree-1:0] hash_subkey_q [NumSharesLocal];
   sp2v_e                hash_subkey_we;
   hash_subkey_sel_e     hash_subkey_sel;
   logic                 gf_mult_req;
@@ -159,18 +162,24 @@ module aes_ghash
   // Input Data Format Conversion //
   //////////////////////////////////
   // Covert the input data to the internal data format.
-  logic [GCMDegree-1:0] cipher_state_init [NumShares];
-  logic [GCMDegree-1:0] cipher_state_done [NumShares];
+  logic [GCMDegree-1:0] cipher_state_init [NumSharesLocal];
+  logic [GCMDegree-1:0] cipher_state_done [NumSharesLocal];
+  logic [GCMDegree-1:0] prd_clearing [NumSharesLocal];
   logic [GCMDegree-1:0] data_in_prev;
   logic [GCMDegree-1:0] data_out;
   always_comb begin : data_in_conversion
+    cipher_state_done = '{default: '0};
+    cipher_state_init = '{default: '0};
+    prd_clearing      = '{default: '0};
     for (int s = 0; s < NumShares; s++) begin
-      cipher_state_done[s] = aes_state_to_ghash_vec(cipher_state_done_i[s]);
-      cipher_state_init[s] = aes_state_to_ghash_vec(cipher_state_init_i[s]);
+      cipher_state_done[0] ^= aes_state_to_ghash_vec(cipher_state_done_i[s]);
+      cipher_state_init[0] ^= aes_state_to_ghash_vec(cipher_state_init_i[s]);
+      prd_clearing[0]      ^= prd_clearing_i[s];
     end
     data_in_prev = aes_state_to_ghash_vec(aes_transpose(data_in_prev_i));
     data_out     = aes_state_to_ghash_vec(aes_transpose(data_out_i));
   end
+
 
   ////////////////////
   // S = AES_K(J_0) //
@@ -181,8 +190,8 @@ module aes_ghash
   always_comb begin : s_mux
     unique case (s_sel)
       S_LOAD:  s_d = cipher_state_done;
-      S_CLEAR: s_d = prd_clearing_i;
-      default: s_d = prd_clearing_i;
+      S_CLEAR: s_d = prd_clearing;
+      default: s_d = prd_clearing;
     endcase
   end
 
@@ -210,7 +219,7 @@ module aes_ghash
   // Mask invalid bytes. The least significant byte is mapped to Position 15 internally. See
   // the section "Details on the data formats" in the header for details.
   always_comb begin
-    for (int i = 0; i < 16; i++) begin
+    for (int unsigned i = 0; i < 16; i++) begin
       ghash_in_valid[15-i] = num_valid_bytes_i > i[4:0] ? ghash_in[15-i] : 8'b0;
     end
   end
@@ -218,18 +227,20 @@ module aes_ghash
   /////////////////
   // GHASH State //
   /////////////////
-  if (!SecMasking) begin : gen_ghash_state_zero_unmasked
+  if (!SecMasking || NumSharesLocal == 1) begin : gen_ghash_state_zero_unmasked
     assign ghash_state_zero[0] = '0;
   end else begin : gen_ghash_state_zero_unmasked
-    assign ghash_state_zero[0] = prd_clearing_i[1];
-    assign ghash_state_zero[1] = prd_clearing_i[1];
+    assign ghash_state_zero[0] = prd_clearing[0];
+    assign ghash_state_zero[1] = prd_clearing[1];
   end
 
   // Add the GHASH input to the current state.
   assign ghash_state_add[0] = ghash_state_q[0] ^ ghash_in_valid;
-  if (SecMasking) begin : gen_ghash_state_share_1
-    assign ghash_state_add[1] = ghash_state_q[1];
-    assign ghash_state_mult[1] = ghash_state_q[1];
+  if (SecMasking || NumSharesLocal != 1) begin : gen_ghash_state_shares
+    for (genvar s = 1; s < NumSharesLocal; s++) begin : gen_ghash_state_shares_s
+      assign ghash_state_add[s]  = ghash_state_q[s];
+      assign ghash_state_mult[s] = ghash_state_q[s];
+    end
   end
 
   always_comb begin : ghash_state_mux
@@ -238,8 +249,8 @@ module aes_ghash
       GHASH_STATE_ZERO:    ghash_state_d = ghash_state_zero;
       GHASH_STATE_ADD:     ghash_state_d = ghash_state_add;
       GHASH_STATE_MULT:    ghash_state_d = ghash_state_mult;
-      GHASH_STATE_CLEAR:   ghash_state_d = prd_clearing_i;
-      default:             ghash_state_d = prd_clearing_i;
+      GHASH_STATE_CLEAR:   ghash_state_d = prd_clearing;
+      default:             ghash_state_d = prd_clearing;
     endcase
   end
 
@@ -257,8 +268,8 @@ module aes_ghash
   always_comb begin : hash_subkey_mux
     unique case (hash_subkey_sel)
       HASH_SUBKEY_LOAD:  hash_subkey_d = cipher_state_done;
-      HASH_SUBKEY_CLEAR: hash_subkey_d = prd_clearing_i;
-      default:           hash_subkey_d = prd_clearing_i;
+      HASH_SUBKEY_CLEAR: hash_subkey_d = prd_clearing;
+      default:           hash_subkey_d = prd_clearing;
     endcase
   end
 
@@ -325,29 +336,6 @@ module aes_ghash
     alert_o = 1'b0;
 
     unique case (aes_ghash_cs)
-
-      // load key: input handshake only
-      //           - wait for GHASH ready in main FSM state after CTRL_PRNG_UPDATE
-      // load s: input handshake only
-      //         - wait for GHASH ready in main FSM state after CTRL_PRNG_UPDATE
-      // aad: add + mult, handshake between main FSM and GHASH only, no cipher op
-      //          - wait for GHASH ready in main FSM state after CTRL_PRNG_UPDATE
-      //          - perform handshake similar as for decrypt
-      // encrypt: add + mult, handshake between main FSM, cipher and GHASH
-      //          - don't wait for GHASH ready in main FSM IDLE
-      //          - wait for GHASH ready in main FSM FINISH, use finish signal
-      //            ghash_ready -> ghash_valid, can wait in cycle before FINISH
-      //            by adding a new state after CTRL_PRNG_UPDATE, before CTRL_FINISH
-      //            we know that GHASH will be ready to consume the cipher output in the next cycle
-      // decrypt: add + mult, handshake between main FSM, cipher and GHASH
-      //          - wait for GHASH ready in main FSM FINISH, use finish signal
-      //            ghash_ready -> ghash_valid, can wait in cycle before FINISH
-      //            by adding a new state after CTRL_PRNG_UPDATE, perform before CTRL_FINISH
-      // save & tag: wait for GHASH ready after CTRL_PRNG_UPDATE, clear internal state with output handshake
-      //             - output handshake in CTRL FINISH
-      // clear: input handshake only
-      //        - wait for GHASH ready in main FSM state after CTRL_PRNG_UPDATE
-
       GHASH_IDLE: begin
         in_ready_o = SP2V_HIGH;
         if (in_valid_i == SP2V_HIGH) begin
@@ -462,10 +450,12 @@ module aes_ghash
   /////////////
 
   // Covert the output data from the internal data format to the output format.
-  assign ghash_state_done_o = ghash_state_q;
-    always_comb begin : data_out_conversion
-    for (int s = 0; s < NumShares; s++) begin
+  always_comb begin : data_out_conversion
+    for (int s = 0; s < NumSharesLocal; s++) begin
       ghash_state_done_o[s] = aes_transpose(aes_state_to_ghash_vec(ghash_state_q[s]));
+    end
+    for (int s = NumSharesLocal; s < NumShares; s++) begin
+      ghash_state_done_o[s] = '0;
     end
   end
 
