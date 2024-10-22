@@ -11,6 +11,7 @@ AESModelChecker::AESModelChecker(Vaes_sim *rtl)
     : rtl_(rtl), state_model_{0}, state_rtl_{0} {
   state_model_.op = false;
   state_model_.mode = kCryptoAesEcb;
+  state_model_.gcm_text = false;
   state_model_.cipher_op = false;
   state_model_.key_expand_op = false;
   state_model_.key_len = 16;
@@ -25,6 +26,7 @@ AESModelChecker::AESModelChecker(Vaes_sim *rtl)
   state_model_.rcon = 0;
   state_rtl_.op = false;
   state_rtl_.mode = kCryptoAesEcb;
+  state_rtl_.gcm_text = false;
   state_rtl_.cipher_op = false;
   state_rtl_.key_expand_op = false;
   state_rtl_.key_len = 16;
@@ -206,33 +208,35 @@ int AESModelChecker::Compare() {
         }
 
         // call OpenSSL/BoringSSL to verify
-        unsigned char crypto_input[16];
-        unsigned char crypto_output[16];
-        unsigned char iv[16];
-        memset(iv, 0, 16);
-        CopyBlock(crypto_input, state_model_.data_in);
-        if (state_model_.mode != kCryptoAesEcb) {
-          CopyBlock(iv, state_model_.iv);
-        }
-        if (!state_model_.cipher_op) {
-          crypto_encrypt(crypto_output, iv, crypto_input, 16,
-                         state_model_.key_init, state_model_.key_len,
-                         state_model_.mode);
-        } else {
-          crypto_decrypt(crypto_output, iv, crypto_input, 16,
-                         state_model_.key_init, state_model_.key_len,
-                         state_model_.mode);
-        }
-        status = CompareBlock(crypto_output, state_rtl_.data_out, 16);
-        if (status) {
-          printf("ERROR: mismatch between OpenSSL/BoringSSL and RTL:\n");
-          printf("Output RTL\t\t\t");
-          aes_print_block(&state_rtl_.data_out[0], 16);
-          printf("Output OpenSSL/BoringSSL\t");
-          aes_print_block(&crypto_output[0], 16);
-          return status;
-        } else {
-          printf("SUCCESS: OpenSSL/BoringSSL matches RTL\n");
+        if (state_model_.mode != kCryptoAesGcm) {
+          unsigned char crypto_input[16];
+          unsigned char crypto_output[16];
+          unsigned char iv[16];
+          memset(iv, 0, 16);
+          CopyBlock(crypto_input, state_model_.data_in);
+          if (state_model_.mode != kCryptoAesEcb) {
+            CopyBlock(iv, state_model_.iv);
+          }
+          if (!state_model_.cipher_op) {
+            crypto_encrypt(crypto_output, iv, crypto_input, 16,
+                           state_model_.key_init, state_model_.key_len,
+                           state_model_.mode, NULL, 0, NULL, 0);
+          } else {
+            crypto_decrypt(crypto_output, iv, crypto_input, 16,
+                           state_model_.key_init, state_model_.key_len,
+                           state_model_.mode, NULL, 0, NULL, 0);
+          }
+          status = CompareBlock(crypto_output, state_rtl_.data_out, 16);
+          if (status) {
+            printf("ERROR: mismatch between OpenSSL/BoringSSL and RTL:\n");
+            printf("Output RTL\t\t\t");
+            aes_print_block(&state_rtl_.data_out[0], 16);
+            printf("Output OpenSSL/BoringSSL\t");
+            aes_print_block(&crypto_output[0], 16);
+            return status;
+          } else {
+            printf("SUCCESS: OpenSSL/BoringSSL matches RTL\n");
+          }
         }
       }
     }  // op
@@ -246,6 +250,7 @@ void AESModelChecker::UpdateModel() {
     // start
     state_model_.op = state_rtl_.op;
     state_model_.mode = state_rtl_.mode;
+    state_model_.gcm_text = state_rtl_.gcm_text;
     state_model_.cipher_op = state_rtl_.cipher_op;
     state_model_.key_expand_op = state_rtl_.key_expand_op;
     state_model_.key_len = state_rtl_.key_len;
@@ -296,7 +301,8 @@ void AESModelChecker::UpdateModel() {
           CopyBlock(state_model_.data_out, state_model_.state_d);
           if (state_model_.mode == kCryptoAesCtr ||
               state_model_.mode == kCryptoAesCfb ||
-              state_model_.mode == kCryptoAesOfb) {
+              state_model_.mode == kCryptoAesOfb ||
+              (state_model_.mode == kCryptoAesGcm && state_model_.gcm_text)) {
             // add the actual data input
             aes_add_round_key(state_model_.data_out, state_model_.data_in);
           }
@@ -362,6 +368,7 @@ void AESModelChecker::GetInitRoundKey() {
 void AESModelChecker::MonitorSignals() {
   state_rtl_.op = rtl_->rootp->aes_sim__DOT__op;
   state_rtl_.mode = (crypto_mode_t)rtl_->rootp->aes_sim__DOT__mode;
+  state_rtl_.gcm_text = rtl_->rootp->aes_sim__DOT__gcm_text;;
   state_rtl_.cipher_op = rtl_->rootp->aes_sim__DOT__cipher_op;
   state_rtl_.key_expand_op = rtl_->rootp->aes_sim__DOT__key_expand_op;
 

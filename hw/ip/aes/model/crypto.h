@@ -15,7 +15,7 @@ typedef enum crypto_mode {
   kCryptoAesOfb = 1 << 3,
   kCryptoAesCtr = 1 << 4,
   kCryptoAesGcm = 1 << 5,
-  kCryptoAesNone = 1 << 6
+  kCryptoAesNone = 0x3f
 } crypto_mode_t;
 
 /**

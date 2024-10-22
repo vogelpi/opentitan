@@ -16,6 +16,7 @@ struct AESState {
  public:
   bool op;
   crypto_mode_t mode;
+  bool gcm_text;
   bool cipher_op;
   bool key_expand_op;
   int key_len;

@@ -4,7 +4,7 @@
 
 #include "aes_tlul_interface.h"
 
-#define SEQ 2
+#define SEQ 1
 
 #if (SEQ == 2)
 #include "aes_tlul_sequence_modes.h"

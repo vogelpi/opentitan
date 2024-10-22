@@ -7,10 +7,11 @@
 module aes_sim import aes_pkg::*;
 #(
   parameter bit          AES192Enable         = 1,
+  parameter bit          AESGCMEnable         = 1,
   parameter bit          SecMasking           = 1,
   parameter sbox_impl_e  SecSBoxImpl          = SBoxImplDom,
-  parameter int unsigned SecStartTriggerDelay = 40,
-  parameter bit          SecAllowForcingMasks = 1,
+  parameter int unsigned SecStartTriggerDelay = 0,
+  parameter bit          SecAllowForcingMasks = 0,
   parameter bit          SecSkipPRNGReseeding = 0
 ) (
   input                     clk_i,
@@ -46,6 +47,7 @@ module aes_sim import aes_pkg::*;
   // Instantiate top-level
   aes #(
     .AES192Enable         ( AES192Enable         ),
+    .AESGCMEnable         ( AESGCMEnable         ),
     .SecMasking           ( SecMasking           ),
     .SecSBoxImpl          ( SecSBoxImpl          ),
     .SecStartTriggerDelay ( SecStartTriggerDelay ),
@@ -93,9 +95,15 @@ module aes_sim import aes_pkg::*;
   assign aes_cipher_ctrl_cs = u_aes.u_aes_core.u_aes_cipher_core.u_aes_cipher_control.gen_fsm[0].gen_fsm_p.u_aes_cipher_control_fsm_i.u_aes_cipher_control_fsm.aes_cipher_ctrl_cs;
   assign aes_cipher_ctrl_ns = u_aes.u_aes_core.u_aes_cipher_core.u_aes_cipher_control.gen_fsm[0].gen_fsm_p.u_aes_cipher_control_fsm_i.u_aes_cipher_control_fsm.aes_cipher_ctrl_ns;
 
+  logic ghash;
+  assign ghash = u_aes.u_aes_core.u_aes_control.gen_fsm[0].gen_fsm_p.u_aes_control_fsm_i.u_aes_control_fsm.doing_gcm_save_q |
+                 u_aes.u_aes_core.u_aes_control.gen_fsm[0].gen_fsm_p.u_aes_control_fsm_i.u_aes_control_fsm.doing_gcm_tag_q  |
+                 u_aes.u_aes_core.u_aes_control.gen_fsm[0].gen_fsm_p.u_aes_control_fsm_i.u_aes_control_fsm.doing_gcm_hsk    |
+                 u_aes.u_aes_core.u_aes_control.gen_fsm[0].gen_fsm_p.u_aes_control_fsm_i.u_aes_control_fsm.doing_gcm_s;
+
   assign start = (aes_cipher_ctrl_cs == IDLE) && (aes_cipher_ctrl_ns == INIT);   // IDLE -> INIT
   assign init  = (aes_cipher_ctrl_cs == INIT);                                   // INIT
-  assign done  = (aes_cipher_ctrl_cs == FINISH) && (aes_cipher_ctrl_ns == IDLE); // FINISH -> IDLE
+  assign done  = (aes_cipher_ctrl_cs == FINISH) && (aes_cipher_ctrl_ns == IDLE) && !ghash; // FINISH -> IDLE
   assign busy  = (u_aes.u_aes_core.u_aes_control.cipher_crypt_i == SP2V_HIGH) |
                  (u_aes.u_aes_core.u_aes_control.cipher_crypt_o == SP2V_HIGH) |
                  (u_aes.u_aes_core.u_aes_control.cipher_dec_key_gen_i == SP2V_HIGH) |
@@ -113,14 +121,17 @@ module aes_sim import aes_pkg::*;
   // Make internal signals directly accessible
   // control
   logic        op            /*verilator public_flat*/;
-  logic  [4:0] mode          /*verilator public_flat*/;
+  logic  [5:0] mode          /*verilator public_flat*/;
+  logic        gcm_text      /*verilator public_flat*/;
   logic        cipher_op     /*verilator public_flat*/;
   logic        key_expand_op /*verilator public_flat*/;
   logic  [2:0] key_len       /*verilator public_flat*/;
   logic  [3:0] round         /*verilator public_flat*/;
 
   assign op            = u_aes.u_aes_core.aes_op_q == AES_DEC;
-  assign mode          = {u_aes.u_aes_core.aes_mode_q[4:0]};
+  assign mode          = {u_aes.u_aes_core.aes_mode_q[5:0]};
+  assign gcm_text      = u_aes.u_aes_core.aes_mode_q == AES_GCM &&
+                         u_aes.u_aes_core.gcm_phase_q == GCM_TEXT;
   assign cipher_op     = u_aes.u_aes_core.u_aes_cipher_core.op_i == CIPH_INV;
   assign key_expand_op = u_aes.u_aes_core.u_aes_cipher_core.u_aes_key_expand.op_i == CIPH_INV;
   assign key_len       = {u_aes.u_aes_core.u_aes_cipher_core.key_len_i};
