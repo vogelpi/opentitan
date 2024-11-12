@@ -753,10 +753,14 @@ static const TLI tl_i_transactions[num_transactions_max] = {
     {true, 0, 0, 2, 0, AES_GCM_CONFIG, 0xF,
      (0x10 << AES_GCM_CTRL_NUM_VALID_BYTES_OFFSET) | 0x2,
      0, true},  // restore, 16 bytes
-    {true, 0, 0, 2, 0, AES_DATA_IN_0 + 0x0, 0xF, 0xf8aa56ed, 0, true},
-    {true, 0, 0, 2, 0, AES_DATA_IN_0 + 0x4, 0xF, 0x04672da7, 0, true},
-    {true, 0, 0, 2, 0, AES_DATA_IN_0 + 0x8, 0xF, 0x2892db9f, 0, true},
-    {true, 0, 0, 2, 0, AES_DATA_IN_0 + 0xC, 0xF, 0x2213baed, 0, true},
+    //{true, 0, 0, 2, 0, AES_DATA_IN_0 + 0x0, 0xF, 0xf8aa56ed, 0, true},
+    //{true, 0, 0, 2, 0, AES_DATA_IN_0 + 0x4, 0xF, 0x04672da7, 0, true},
+    //{true, 0, 0, 2, 0, AES_DATA_IN_0 + 0x8, 0xF, 0x2892db9f, 0, true},
+    //{true, 0, 0, 2, 0, AES_DATA_IN_0 + 0xC, 0xF, 0x2213baed, 0, true},
+    {true, 0, 0, 2, 0, AES_DATA_IN_0 + 0x0, 0xF, 0xb3b211df, 0, true},
+    {true, 0, 0, 2, 0, AES_DATA_IN_0 + 0x4, 0xF, 0xa00e629b, 0, true},
+    {true, 0, 0, 2, 0, AES_DATA_IN_0 + 0x8, 0xF, 0x004067d2, 0, true},
+    {true, 0, 0, 2, 0, AES_DATA_IN_0 + 0xC, 0xF, 0x3aa7016a, 0, true},
 
     {true, 4, 0, 2, 0, AES_STATUS, 0xF, 0x0, 0, true},
     {true, 0, 0, 2, 0, AES_GCM_CONFIG, 0xF,
@@ -1080,10 +1084,14 @@ static const EXP_RESP tl_o_exp_resp[num_responses_max] = {
      1 << AES_STATUS_IDLE_OFFSET},  // status shows idle - save
     {1 << AES_STATUS_OUTPUT_VALID_OFFSET,
      1 << AES_STATUS_OUTPUT_VALID_OFFSET},  // status shows output valid
-    {CHECK_DATA_OUT ? 0xFFFFFFFF : 0x0, 0xf8aa56ed},
-    {CHECK_DATA_OUT ? 0xFFFFFFFF : 0x0, 0x04672da7},
-    {CHECK_DATA_OUT ? 0xFFFFFFFF : 0x0, 0x2892db9f},
-    {CHECK_DATA_OUT ? 0xFFFFFFFF : 0x0, 0x2213baed},
+    //{CHECK_DATA_OUT ? 0xFFFFFFFF : 0x0, 0xf8aa56ed},
+    //{CHECK_DATA_OUT ? 0xFFFFFFFF : 0x0, 0x04672da7},
+    //{CHECK_DATA_OUT ? 0xFFFFFFFF : 0x0, 0x2892db9f},
+    //{CHECK_DATA_OUT ? 0xFFFFFFFF : 0x0, 0x2213baed},
+    {CHECK_DATA_OUT ? 0xFFFFFFFF : 0x0, 0xb3b211df},
+    {CHECK_DATA_OUT ? 0xFFFFFFFF : 0x0, 0xa00e629b},
+    {CHECK_DATA_OUT ? 0xFFFFFFFF : 0x0, 0x004067d2},
+    {CHECK_DATA_OUT ? 0xFFFFFFFF : 0x0, 0x3aa7016a},
 
     {1 << AES_STATUS_IDLE_OFFSET,
      1 << AES_STATUS_IDLE_OFFSET},  // status shows idle - clear
