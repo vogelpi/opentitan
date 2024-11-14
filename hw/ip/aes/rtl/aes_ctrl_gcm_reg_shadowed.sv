@@ -25,6 +25,7 @@ module aes_ctrl_gcm_reg_shadowed
   // Main control
   output logic       qe_o, // software wants to write
   input  logic       we_i, // hardware grants software write
+  input  logic       first_block_i,
   output gcm_phase_e gcm_phase_o,
   output logic [4:0] num_valid_bytes_o,
 
@@ -67,24 +68,44 @@ module aes_ctrl_gcm_reg_shadowed
 
       // Only a subset of next phase transitions are allowed.
       unique case (gcm_phase_q)
-        GCM_INIT:    gcm_phase_d = gcm_phase_d == GCM_RESTORE ||
-                                   gcm_phase_d == GCM_AAD     ||
-                                   gcm_phase_d == GCM_TEXT    ||
-                                   gcm_phase_d == GCM_TAG     ? gcm_phase_d : gcm_phase_q;
-        GCM_RESTORE: gcm_phase_d = gcm_phase_d == GCM_INIT    ||
-                                   gcm_phase_d == GCM_AAD     ||
-                                   gcm_phase_d == GCM_TEXT    ? gcm_phase_d : gcm_phase_q;
-        GCM_AAD:     gcm_phase_d = gcm_phase_d == GCM_INIT    ||
-                                   gcm_phase_d == GCM_TEXT    ||
-                                   gcm_phase_d == GCM_SAVE    ||
-                                   gcm_phase_d == GCM_TAG     ? gcm_phase_d : gcm_phase_q;
-        GCM_TEXT:    gcm_phase_d = gcm_phase_d == GCM_INIT    ||
-                                   gcm_phase_d == GCM_SAVE    ||
-                                   gcm_phase_d == GCM_TAG     ? gcm_phase_d : gcm_phase_q;
-        GCM_SAVE:    gcm_phase_d = gcm_phase_d == GCM_INIT    ? gcm_phase_d : gcm_phase_q;
-        GCM_TAG:     gcm_phase_d = gcm_phase_d == GCM_INIT    ? gcm_phase_d : gcm_phase_q;
-        default:     gcm_phase_d = gcm_phase_q; // If we end up in an unspported value (which
-                                                // should never happen), keep it.
+        GCM_INIT: begin
+          gcm_phase_d = gcm_phase_d == GCM_RESTORE                ||
+                        gcm_phase_d == GCM_AAD                    ||
+                        gcm_phase_d == GCM_TEXT                   ||
+                        gcm_phase_d == GCM_TAG                    ? gcm_phase_d : gcm_phase_q;
+        end
+
+        GCM_RESTORE: begin
+          gcm_phase_d = gcm_phase_d == GCM_INIT                   ||
+                        gcm_phase_d == GCM_AAD                    ||
+                        gcm_phase_d == GCM_TEXT                   ? gcm_phase_d : gcm_phase_q;
+        end
+
+        GCM_AAD: begin
+          gcm_phase_d = gcm_phase_d == GCM_INIT                   ||
+                        gcm_phase_d == GCM_TEXT                   ||
+                        gcm_phase_d == GCM_SAVE && !first_block_i ||
+                        gcm_phase_d == GCM_TAG                    ? gcm_phase_d : gcm_phase_q;
+        end
+
+        GCM_TEXT: begin
+          gcm_phase_d = gcm_phase_d == GCM_INIT                   ||
+                        gcm_phase_d == GCM_SAVE && !first_block_i ||
+                        gcm_phase_d == GCM_TAG                    ? gcm_phase_d : gcm_phase_q;
+        end
+
+        GCM_SAVE: begin
+          gcm_phase_d = gcm_phase_d == GCM_INIT                   ? gcm_phase_d : gcm_phase_q;
+        end
+
+        GCM_TAG: begin
+          gcm_phase_d = gcm_phase_d == GCM_INIT                   ? gcm_phase_d : gcm_phase_q;
+        end
+
+        default: begin
+          gcm_phase_d = gcm_phase_q; // If we end up in an unspported value (which should never
+                                     // happen), keep it.
+        end
       endcase
     end
     assign ctrl_gcm_wd.phase = gcm_phase_d;
