@@ -242,6 +242,17 @@ status_t handle_aes_sca_fvsr_key_set(ujson_t *uj);
 status_t handle_aes_sca_fvsr_key_start_batch_generate(ujson_t *uj);
 
 /**
+ * AES-GCM FvsR Batch mode.
+ *
+ * IV and key are the FvsR data set.
+ * PTX and AAD always stays constant.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_aes_sca_gcm_fvsr_batch(ujson_t *uj);
+
+/**
  * Invokes an AES-GCM encryption with tag generation.
  *
  * @param uj An initialized uJSON context.
