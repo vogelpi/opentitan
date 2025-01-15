@@ -616,7 +616,7 @@ static status_t trigger_aes_gcm(dif_aes_key_share_t key, dif_aes_iv_t iv,
                                 size_t ptx_last_block_size, dif_aes_data_t *tag,
                                 aes_sca_gcm_triggers_t trigger) {
   // AES GCM configuration used for this test.
-  dif_aes_transaction_t transaction = {
+  dif_aes_transaction_t transaction_gcm = {
       .operation = kDifAesOperationEncrypt,
       .mode = kDifAesModeGcm,
       .key_len = kDifAesKey128,
@@ -624,12 +624,12 @@ static status_t trigger_aes_gcm(dif_aes_key_share_t key, dif_aes_iv_t iv,
       .manual_operation = kDifAesManualOperationManual,
       .mask_reseeding = kDifAesReseedPer8kBlock,
       .reseed_on_key_change = false,
-      .force_masks = false,
+      .force_masks = transaction.force_masks,
       .ctrl_aux_lock = false,
   };
 
   // Write the initial key share, IV and data in CSRs.
-  TRY(dif_aes_start(&aes, &transaction, &key, &iv));
+  TRY(dif_aes_start(&aes, &transaction_gcm, &key, &iv));
   AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusIdle, true,
                                 kIbexAesGcmSleepCycles * 2);
   // Encrypt all-zero block.
@@ -641,8 +641,14 @@ static status_t trigger_aes_gcm(dif_aes_key_share_t key, dif_aes_iv_t iv,
     // In the FPGA mode, the AES automatically raises the trigger signal. For
     // the other mode, the pentest_call_and_sleep function manually raises the
     // trigger pin.
+    if (fpga_mode) {
+      pentest_set_trigger_high();
+    }
     pentest_call_and_sleep(aes_manual_trigger, kIbexAesGcmSleepCycles,
                            !fpga_mode, false);
+    if (fpga_mode) {
+      pentest_set_trigger_low();
+    }
   } else {
     aes_manual_trigger();
   }
@@ -665,8 +671,14 @@ static status_t trigger_aes_gcm(dif_aes_key_share_t key, dif_aes_iv_t iv,
       // In the FPGA mode, the AES automatically raises the trigger signal. For
       // the other mode, the pentest_call_and_sleep function manually raises the
       // trigger pin.
+      if (fpga_mode) {
+        pentest_set_trigger_high();
+      }
       pentest_call_and_sleep(aes_manual_trigger, kIbexAesGcmSleepCycles,
                              !fpga_mode, false);
+      if (fpga_mode) {
+        pentest_set_trigger_low();
+      }
     } else {
       aes_manual_trigger();
     }
@@ -687,8 +699,14 @@ static status_t trigger_aes_gcm(dif_aes_key_share_t key, dif_aes_iv_t iv,
     // In the FPGA mode, the AES automatically raises the trigger signal. For
     // the other mode, the pentest_call_and_sleep function manually raises the
     // trigger pin.
+    if (fpga_mode) {
+      pentest_set_trigger_high();
+    }
     pentest_call_and_sleep(aes_manual_trigger, kIbexAesGcmSleepCycles,
                            !fpga_mode, false);
+    if (fpga_mode) {
+      pentest_set_trigger_low();
+    }
   } else {
     aes_manual_trigger();
   }
@@ -711,8 +729,14 @@ static status_t trigger_aes_gcm(dif_aes_key_share_t key, dif_aes_iv_t iv,
       // In the FPGA mode, the AES automatically raises the trigger signal. For
       // the other mode, the pentest_call_and_sleep function manually raises the
       // trigger pin.
+      if (fpga_mode) {
+        pentest_set_trigger_high();
+      }
       pentest_call_and_sleep(aes_manual_trigger, kIbexAesGcmSleepCycles,
                              !fpga_mode, false);
+      if (fpga_mode) {
+        pentest_set_trigger_low();
+      }
     } else {
       aes_manual_trigger();
     }
@@ -732,8 +756,14 @@ static status_t trigger_aes_gcm(dif_aes_key_share_t key, dif_aes_iv_t iv,
     // In the FPGA mode, the AES automatically raises the trigger signal. For
     // the other mode, the pentest_call_and_sleep function manually raises the
     // trigger pin.
+    if (fpga_mode) {
+      pentest_set_trigger_high();
+    }
     pentest_call_and_sleep(aes_manual_trigger, kIbexAesGcmSleepCycles,
                            !fpga_mode, false);
+    if (fpga_mode) {
+      pentest_set_trigger_low();
+    }
   } else {
     aes_manual_trigger();
   }
@@ -754,8 +784,14 @@ static status_t trigger_aes_gcm(dif_aes_key_share_t key, dif_aes_iv_t iv,
     // In the FPGA mode, the AES automatically raises the trigger signal. For
     // the other mode, the pentest_call_and_sleep function manually raises the
     // trigger pin.
+    if (fpga_mode) {
+      pentest_set_trigger_high();
+    }
     pentest_call_and_sleep(aes_manual_trigger, kIbexAesGcmSleepCycles,
                            !fpga_mode, false);
+    if (fpga_mode) {
+      pentest_set_trigger_low();
+    }
   } else {
     aes_manual_trigger();
   }
