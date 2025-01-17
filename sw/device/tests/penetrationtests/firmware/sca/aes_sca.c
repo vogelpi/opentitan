@@ -32,6 +32,7 @@ enum {
   kAesKeyLengthMax = 32,
   kAesKeyLength = 16,
   kAesTextLength = 16,
+  kTestTimeout = (1000 * 1000),
   /**
    * Number of cycles (at `kClockFreqCpuHz`) that Ibex should sleep to minimize
    * noise during AES operations. Caution: This number should be chosen to
@@ -162,6 +163,27 @@ dif_aes_transaction_t transaction = {
 };
 
 /**
+ * Load fixed seed into AES.
+ *
+ * Before calling this function, use
+ * aes_testutils_masking_prng_zero_output_seed() to initialize the entropy
+ * complex for performing AES SCA measurements with masking switched off. This
+ * function then loads the fixed seed into the AES, allowing the disable the
+ * masking.
+ *
+ * @param key Key.
+ * @param key_len Key length.
+ */
+static status_t aes_sca_load_fixed_seed(void) {
+  AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusIdle, true, kTestTimeout);
+  // Load magic seed such that masking is turned off. We need to do this after
+  // dif_aes_start() as then the force_masks is correctly set.
+  TRY(dif_aes_trigger(&aes, kDifAesTriggerPrngReseed));
+  AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusIdle, true, kTestTimeout);
+  return OK_STATUS();
+}
+
+/**
  * Mask and configure key.
  *
  * This function masks the provided key using a software LFSR and then
@@ -172,10 +194,9 @@ dif_aes_transaction_t transaction = {
  * @param key Key.
  * @param key_len Key length.
  */
-static aes_sca_error_t aes_key_mask_and_config(const uint8_t *key,
-                                               size_t key_len) {
+status_t aes_key_mask_and_config(const uint8_t *key, size_t key_len) {
   if (key_len != kAesKeyLength) {
-    return aesScaOutOfRange;
+    return OUT_OF_RANGE();
   }
   dif_aes_key_share_t key_shares;
   // Mask the provided key.
@@ -191,11 +212,17 @@ static aes_sca_error_t aes_key_mask_and_config(const uint8_t *key,
     key_shares.share0[i] =
         pentest_non_linear_layer(pentest_next_lfsr(1, kPentestLfsrMasking));
   }
-  if (dif_aes_start(&aes, &transaction, &key_shares, NULL) != kDifOk) {
-    return aesScaAborted;
-  }
 
-  return aesScaOk;
+  TRY(dif_aes_start(&aes, &transaction, &key_shares, NULL));
+
+#if !OT_IS_ENGLISH_BREAKFAST
+  if (transaction.force_masks) {
+    // Disable masking. Force the masking PRNG output value to 0.
+    TRY(aes_sca_load_fixed_seed());
+  }
+#endif
+
+  return OK_STATUS();
 }
 
 /**
@@ -376,7 +403,7 @@ status_t handle_aes_sca_batch_alternative_encrypt(ujson_t *uj) {
   // peripheral might trigger the reseeding of the internal masking PRNG which
   // disturbs SCA measurements.
   if (block_ctr > kBlockCtrMax) {
-    aes_key_mask_and_config(key_fixed, kAesKeyLength);
+    TRY(aes_key_mask_and_config(key_fixed, kAesKeyLength));
     block_ctr = num_encryptions;
   }
 
@@ -431,9 +458,7 @@ status_t handle_aes_sca_batch_encrypt(ujson_t *uj) {
   // peripheral might trigger the reseeding of the internal masking PRNG which
   // disturbs SCA measurements.
   if (block_ctr > kBlockCtrMax) {
-    if (aes_key_mask_and_config(key_fixed, kAesKeyLength) != aesScaOk) {
-      return ABORTED();
-    }
+    TRY(aes_key_mask_and_config(key_fixed, kAesKeyLength));
     block_ctr = num_encryptions;
   }
 
@@ -466,9 +491,7 @@ status_t handle_aes_sca_batch_encrypt_random(ujson_t *uj) {
   // peripheral might trigger the reseeding of the internal masking PRNG which
   // disturbs SCA measurements.
   if (block_ctr > kBlockCtrMax) {
-    if (aes_key_mask_and_config(key_random, kAesKeyLength) != aesScaOk) {
-      return ABORTED();
-    }
+    TRY(aes_key_mask_and_config(key_random, kAesKeyLength));
     block_ctr = num_encryptions;
   }
 
@@ -476,9 +499,7 @@ status_t handle_aes_sca_batch_encrypt_random(ujson_t *uj) {
     pentest_set_trigger_high();
   }
   for (uint32_t i = 0; i < num_encryptions; ++i) {
-    if (aes_key_mask_and_config(key_random, kAesKeyLength) != aesScaOk) {
-      return ABORTED();
-    }
+    TRY(aes_key_mask_and_config(key_random, kAesKeyLength));
     if (aes_encrypt(plaintext_random, kAesTextLength) != aesScaOk) {
       return ABORTED();
     }
@@ -530,7 +551,7 @@ status_t handle_aes_sca_fvsr_data_batch_encrypt(ujson_t *uj) {
     pentest_set_trigger_high();
   }
   for (uint32_t i = 0; i < num_encryptions; ++i) {
-    aes_key_mask_and_config(batch_keys[i], kAesKeyLength);
+    TRY(aes_key_mask_and_config(batch_keys[i], kAesKeyLength));
     aes_encrypt(batch_plaintexts[i], kAesTextLength);
   }
   if (fpga_mode) {
@@ -556,9 +577,7 @@ status_t handle_aes_sca_fvsr_key_batch_encrypt(ujson_t *uj) {
     pentest_set_trigger_high();
   }
   for (uint32_t i = 0; i < num_encryptions; ++i) {
-    if (aes_key_mask_and_config(batch_keys[i], kAesKeyLength) != aesScaOk) {
-      return ABORTED();
-    }
+    TRY(aes_key_mask_and_config(batch_keys[i], kAesKeyLength));
     if (aes_encrypt(batch_plaintexts[i], kAesTextLength) != aesScaOk) {
       return ABORTED();
     }
@@ -667,6 +686,14 @@ static status_t trigger_aes_gcm(dif_aes_key_share_t key, dif_aes_iv_t iv,
 
   // Write the initial key share, IV and data in CSRs.
   TRY(dif_aes_start(&aes, &transaction_gcm, &key, &iv));
+
+#if !OT_IS_ENGLISH_BREAKFAST
+  if (transaction.force_masks) {
+    // Disable masking. Force the masking PRNG output value to 0.
+    TRY(aes_sca_load_fixed_seed());
+  }
+#endif
+
   AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusIdle, true,
                                 kIbexAesGcmSleepCycles * 2);
   // Encrypt all-zero block.
@@ -1109,9 +1136,7 @@ status_t handle_aes_sca_key_set(ujson_t *uj) {
 
   memcpy(key_fixed, uj_key_data.key, uj_key_data.key_length);
   block_ctr = 0;
-  if (aes_key_mask_and_config(key_fixed, uj_key_data.key_length) != aesScaOk) {
-    return ABORTED();
-  }
+  TRY(aes_key_mask_and_config(key_fixed, uj_key_data.key_length));
   return OK_STATUS();
 }
 
@@ -1138,15 +1163,12 @@ status_t handle_aes_pentest_seed_lfsr(ujson_t *uj) {
     }
     // Load the magic seed into the PRNG. After this, the PRNG outputs
     // an all-zero vector.
-    TRY(dif_aes_trigger(&aes, kDifAesTriggerPrngReseed));
-    bool idle = false;
-    do {
-      TRY(dif_aes_get_status(&aes, kDifAesStatusIdle, &idle));
-    } while (!idle);
-    // Load the PRNG output into the buffer stage.
-    TRY(dif_aes_trigger(&aes, kDifAesTriggerDataOutClear));
+    TRY(aes_sca_load_fixed_seed());
   }
 #endif
+
+  TRY(dif_aes_trigger(&aes, kDifAesTriggerDataOutClear));
+  AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusIdle, true, kTestTimeout);
 
   return OK_STATUS();
 }
@@ -1173,9 +1195,8 @@ status_t handle_aes_sca_single_encrypt(ujson_t *uj) {
   // peripheral might trigger the reseeding of the internal masking PRNG which
   // disturbs SCA measurements.
   if (block_ctr > kBlockCtrMax) {
-    if (aes_key_mask_and_config(key_fixed, kAesKeyLength) != aesScaOk) {
-      return ABORTED();
-    }
+    TRY(aes_key_mask_and_config(key_fixed, kAesKeyLength));
+
     block_ctr = 1;
   }
 
