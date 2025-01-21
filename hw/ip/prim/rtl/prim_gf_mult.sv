@@ -62,7 +62,7 @@ module prim_gf_mult #(
   logic [Loops-1:0][StagesPerCycle-1:0] reformat_data;
 
   // this slice of operand bits used during each loop
-  logic [StagesPerCycle-1:0] op_i_slice, op_i_slice_buf;
+  logic [StagesPerCycle-1:0] op_i_slice;
 
   // the matrix is made up of a series of GF(2^Width) * x
   logic [StagesPerCycle-1:0][Width-1:0] matrix;
@@ -129,22 +129,9 @@ module prim_gf_mult #(
     end
   end
 
-  prim_buf #(
-    .Width(StagesPerCycle)
-  ) u_prim_buf_slice (
-    .in_i (op_i_slice),
-    .out_o(op_i_slice_buf)
-  );
 
   assign matrix = first ? gen_matrix(operand_a_i, 1'b1) : gen_matrix(vector, 1'b0);
-
-  prim_xor2 #(
-    .Width(Width)
-  ) u_prim_xor2_prod (
-    .in0_i(prod_q),
-    .in1_i(gf_mult(matrix, op_i_slice_buf)),
-    .out_o(prod_d)
-  );
+  assign prod_d = prod_q ^ gf_mult(matrix, op_i_slice);
 
   // The output is not toggled until it is ready
   if (OutputZeroUntilAck) begin : gen_out_int_zero
