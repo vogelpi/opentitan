@@ -17,11 +17,13 @@ static const int num_transactions_max = 1 + 3 * (21 + 8 + 8) + 6
     // Test Case 2
     // setup // 1 ciphertext block // tag
     + 26 +   3 + 9 +               12
+    + 6
     // Test Case 4
     // setup // 2 AAD blocks - last incomplete
     + 26  +  7 + 7
     // 4 C blocks - last incomplete // tag
     + 3 + 3 + (4*9) +               12
+    + 11
     // Test Case 4 Decryption
     + 27 + 7 + 7 + 3 + 3 + (4*9) + 12
     // Test Case 4 Save
@@ -277,12 +279,12 @@ static const TLI tl_i_transactions[num_transactions_max] = {
     // https://csrc.nist.rip/groups/ST/toolkit/BCM/documents/proposedmodes/gcm/gcm-spec.pdf
     {true, 4, 0, 2, 0, AES_STATUS, 0xF, 0x0, 0, true},
     {true, 0, 0, 2, 0, AES_CONFIG, 0xF,
-     (0x0 << AES_CTRL_MANUAL_OPERATION_OFFSET) |
+     (0x1 << AES_CTRL_MANUAL_OPERATION_OFFSET) |
          (0x1 << AES_CTRL_KEY_LEN_OFFSET) |
          (kCryptoAesGcm << AES_CTRL_MODE_OFFSET) | 0x1,
      0, true},  // ctrl - encrypt, 128-bit
     {true, 0, 0, 2, 0, AES_CONFIG, 0xF,
-     (0x0 << AES_CTRL_MANUAL_OPERATION_OFFSET) |
+     (0x1 << AES_CTRL_MANUAL_OPERATION_OFFSET) |
          (0x1 << AES_CTRL_KEY_LEN_OFFSET) |
          (kCryptoAesGcm << AES_CTRL_MODE_OFFSET) | 0x1,
      0, true},  // ctrl - encrypt, 128-bit
@@ -313,6 +315,10 @@ static const TLI tl_i_transactions[num_transactions_max] = {
     {true, 0, 0, 2, 0, AES_IV_0 + 0x4, 0xF, 0x0, 0, true},
     {true, 0, 0, 2, 0, AES_IV_0 + 0x8, 0xF, 0x0, 0, true},
     {true, 0, 0, 2, 0, AES_IV_0 + 0xC, 0xF, 0x0, 0, true},
+    {true, 0, 0, 2, 0, AES_TRIGGER, 0xF, 0x1, 0, true},  // start
+    {true, 4, 0, 2, 0, AES_STATUS, 0xF, 0x0, 0, true},
+    {true, 0, 0, 2, 0, AES_TRIGGER, 0xF, 0x1, 0, true},  // start
+    {true, 4, 0, 2, 0, AES_STATUS, 0xF, 0x0, 0, true},
 
     {true, 4, 0, 2, 0, AES_STATUS, 0xF, 0x0, 0, true},
     {true, 0, 0, 2, 0, AES_GCM_CONFIG, 0xF,
@@ -325,6 +331,7 @@ static const TLI tl_i_transactions[num_transactions_max] = {
     {true, 0, 0, 2, 0, AES_DATA_IN_0 + 0x4, 0xF, 0x0, 0, true},
     {true, 0, 0, 2, 0, AES_DATA_IN_0 + 0x8, 0xF, 0x0, 0, true},
     {true, 0, 0, 2, 0, AES_DATA_IN_0 + 0xC, 0xF, 0x0, 0, true},
+    {true, 0, 0, 2, 0, AES_TRIGGER, 0xF, 0x1, 0, true},  // start
     {true, 4, 0, 2, 0, AES_STATUS, 0xF, 0x0, 0, true},
     {true, 4, 0, 2, 0, AES_DATA_OUT_0 + 0x0, 0xF, 0x0, 0, true},
     {true, 4, 0, 2, 0, AES_DATA_OUT_0 + 0x4, 0xF, 0x0, 0, true},
@@ -342,6 +349,7 @@ static const TLI tl_i_transactions[num_transactions_max] = {
     {true, 0, 0, 2, 0, AES_DATA_IN_0 + 0x4, 0xF, 0x0, 0, true},
     {true, 0, 0, 2, 0, AES_DATA_IN_0 + 0x8, 0xF, 0x0, 0, true},
     {true, 0, 0, 2, 0, AES_DATA_IN_0 + 0xC, 0xF, 0x80000000, 0, true},
+    {true, 0, 0, 2, 0, AES_TRIGGER, 0xF, 0x1, 0, true},  // start
     {true, 4, 0, 2, 0, AES_STATUS, 0xF, 0x0, 0, true},
     {true, 4, 0, 2, 0, AES_DATA_OUT_0 + 0x0, 0xF, 0x0, 0, true},
     {true, 4, 0, 2, 0, AES_DATA_OUT_0 + 0x4, 0xF, 0x0, 0, true},
@@ -352,12 +360,12 @@ static const TLI tl_i_transactions[num_transactions_max] = {
     // https://csrc.nist.rip/groups/ST/toolkit/BCM/documents/proposedmodes/gcm/gcm-spec.pdf
     {true, 4, 0, 2, 0, AES_STATUS, 0xF, 0x0, 0, true},
     {true, 0, 0, 2, 0, AES_CONFIG, 0xF,
-     (0x0 << AES_CTRL_MANUAL_OPERATION_OFFSET) |
+     (0x1 << AES_CTRL_MANUAL_OPERATION_OFFSET) |
          (0x1 << AES_CTRL_KEY_LEN_OFFSET) |
          (kCryptoAesGcm << AES_CTRL_MODE_OFFSET) | 0x1,
      0, true},  // ctrl - encrypt, 128-bit
     {true, 0, 0, 2, 0, AES_CONFIG, 0xF,
-     (0x0 << AES_CTRL_MANUAL_OPERATION_OFFSET) |
+     (0x1 << AES_CTRL_MANUAL_OPERATION_OFFSET) |
          (0x1 << AES_CTRL_KEY_LEN_OFFSET) |
          (kCryptoAesGcm << AES_CTRL_MODE_OFFSET) | 0x1,
      0, true},  // ctrl - encrypt, 128-bit
@@ -388,6 +396,10 @@ static const TLI tl_i_transactions[num_transactions_max] = {
     {true, 0, 0, 2, 0, AES_IV_0 + 0x4, 0xF, 0xaddbcefa, 0, true},
     {true, 0, 0, 2, 0, AES_IV_0 + 0x8, 0xF, 0x88f8cade, 0, true},
     {true, 0, 0, 2, 0, AES_IV_0 + 0xC, 0xF, 0x0, 0, true},
+    {true, 0, 0, 2, 0, AES_TRIGGER, 0xF, 0x1, 0, true},  // start
+    {true, 4, 0, 2, 0, AES_STATUS, 0xF, 0x0, 0, true},
+    {true, 0, 0, 2, 0, AES_TRIGGER, 0xF, 0x1, 0, true},  // start
+    {true, 4, 0, 2, 0, AES_STATUS, 0xF, 0x0, 0, true},
 
     {true, 4, 0, 2, 0, AES_STATUS, 0xF, 0x0, 0, true},
     {true, 0, 0, 2, 0, AES_GCM_CONFIG, 0xF,
@@ -400,6 +412,7 @@ static const TLI tl_i_transactions[num_transactions_max] = {
     {true, 0, 0, 2, 0, AES_DATA_IN_0 + 0x4, 0xF, 0xefbeadde, 0, true},
     {true, 0, 0, 2, 0, AES_DATA_IN_0 + 0x8, 0xF, 0xcefaedfe, 0, true},
     {true, 0, 0, 2, 0, AES_DATA_IN_0 + 0xC, 0xF, 0xefbeadde, 0, true},
+    {true, 0, 0, 2, 0, AES_TRIGGER, 0xF, 0x1, 0, true},  // start
 
     {true, 4, 0, 2, 0, AES_STATUS, 0xF, 0x0, 0, true},
     {true, 0, 0, 2, 0, AES_GCM_CONFIG, 0xF,
@@ -412,6 +425,7 @@ static const TLI tl_i_transactions[num_transactions_max] = {
     {true, 0, 0, 2, 0, AES_DATA_IN_0 + 0x4, 0xF, 0x01020304, 0, true},
     {true, 0, 0, 2, 0, AES_DATA_IN_0 + 0x8, 0xF, 0x05060708, 0, true},
     {true, 0, 0, 2, 0, AES_DATA_IN_0 + 0xC, 0xF, 0x090a0b0c, 0, true},
+    {true, 0, 0, 2, 0, AES_TRIGGER, 0xF, 0x1, 0, true},  // start
 
     {true, 4, 0, 2, 0, AES_STATUS, 0xF, 0x0, 0, true},
     {true, 0, 0, 2, 0, AES_GCM_CONFIG, 0xF,
@@ -427,6 +441,7 @@ static const TLI tl_i_transactions[num_transactions_max] = {
     {true, 0, 0, 2, 0, AES_DATA_IN_0 + 0x4, 0xF, 0xe50684f8, 0, true},
     {true, 0, 0, 2, 0, AES_DATA_IN_0 + 0x8, 0xF, 0xc50959a5, 0, true},
     {true, 0, 0, 2, 0, AES_DATA_IN_0 + 0xC, 0xF, 0x9a26f5af, 0, true},
+    {true, 0, 0, 2, 0, AES_TRIGGER, 0xF, 0x1, 0, true},  // start
     {true, 4, 0, 2, 0, AES_STATUS, 0xF, 0x0, 0, true},
     {true, 4, 0, 2, 0, AES_DATA_OUT_0 + 0x0, 0xF, 0x0, 0, true},
     {true, 4, 0, 2, 0, AES_DATA_OUT_0 + 0x4, 0xF, 0x0, 0, true},
@@ -439,6 +454,7 @@ static const TLI tl_i_transactions[num_transactions_max] = {
     {true, 0, 0, 2, 0, AES_DATA_IN_0 + 0x4, 0xF, 0xdaf73415, 0, true},
     {true, 0, 0, 2, 0, AES_DATA_IN_0 + 0x8, 0xF, 0x3d304c2e, 0, true},
     {true, 0, 0, 2, 0, AES_DATA_IN_0 + 0xC, 0xF, 0x728a318a, 0, true},
+    {true, 0, 0, 2, 0, AES_TRIGGER, 0xF, 0x1, 0, true},  // start
     {true, 4, 0, 2, 0, AES_STATUS, 0xF, 0x0, 0, true},
     {true, 4, 0, 2, 0, AES_DATA_OUT_0 + 0x0, 0xF, 0x0, 0, true},
     {true, 4, 0, 2, 0, AES_DATA_OUT_0 + 0x4, 0xF, 0x0, 0, true},
@@ -451,6 +467,7 @@ static const TLI tl_i_transactions[num_transactions_max] = {
     {true, 0, 0, 2, 0, AES_DATA_IN_0 + 0x4, 0xF, 0x53096895, 0, true},
     {true, 0, 0, 2, 0, AES_DATA_IN_0 + 0x8, 0xF, 0x240ecf2f, 0, true},
     {true, 0, 0, 2, 0, AES_DATA_IN_0 + 0xC, 0xF, 0x25b5a649, 0, true},
+    {true, 0, 0, 2, 0, AES_TRIGGER, 0xF, 0x1, 0, true},  // start
     {true, 4, 0, 2, 0, AES_STATUS, 0xF, 0x0, 0, true},
     {true, 4, 0, 2, 0, AES_DATA_OUT_0 + 0x0, 0xF, 0x0, 0, true},
     {true, 4, 0, 2, 0, AES_DATA_OUT_0 + 0x4, 0xF, 0x0, 0, true},
@@ -471,6 +488,7 @@ static const TLI tl_i_transactions[num_transactions_max] = {
     {true, 0, 0, 2, 0, AES_DATA_IN_0 + 0x4, 0xF, 0x57e60daa, 0, true},
     {true, 0, 0, 2, 0, AES_DATA_IN_0 + 0x8, 0xF, 0x397b63ba, 0, true},
     {true, 0, 0, 2, 0, AES_DATA_IN_0 + 0xC, 0xF, 0x01020304, 0, true},
+    {true, 0, 0, 2, 0, AES_TRIGGER, 0xF, 0x1, 0, true},  // start
     {true, 4, 0, 2, 0, AES_STATUS, 0xF, 0x0, 0, true},
     {true, 4, 0, 2, 0, AES_DATA_OUT_0 + 0x0, 0xF, 0x0, 0, true},
     {true, 4, 0, 2, 0, AES_DATA_OUT_0 + 0x4, 0xF, 0x0, 0, true},
@@ -489,6 +507,7 @@ static const TLI tl_i_transactions[num_transactions_max] = {
     {true, 0, 0, 2, 0, AES_DATA_IN_0 + 0x4, 0xF, 0xa0000000, 0, true},
     {true, 0, 0, 2, 0, AES_DATA_IN_0 + 0x8, 0xF, 0x0, 0, true},
     {true, 0, 0, 2, 0, AES_DATA_IN_0 + 0xC, 0xF, 0xe0010000, 0, true},
+    {true, 0, 0, 2, 0, AES_TRIGGER, 0xF, 0x1, 0, true},  // start
     {true, 4, 0, 2, 0, AES_STATUS, 0xF, 0x0, 0, true},
     {true, 4, 0, 2, 0, AES_DATA_OUT_0 + 0x0, 0xF, 0x0, 0, true},
     {true, 4, 0, 2, 0, AES_DATA_OUT_0 + 0x4, 0xF, 0x0, 0, true},
@@ -862,8 +881,10 @@ static const int num_responses_max = 1 + 18 + 18 + 5
     + 2 + 6
     // Test Case 2
     + 2 + 1 + 5 + 6
+    + 2
     // Test Case 4
     + 2 + 2 + 1 + 1 + 4*5 + 6
+    + 2
     // Test Case 4 Decryption
     + 2 + 2 + 1 + 1 + 4*5 + 6
     // Test Case 4 Save
@@ -959,6 +980,10 @@ static const EXP_RESP tl_o_exp_resp[num_responses_max] = {
      1 << AES_STATUS_IDLE_OFFSET},  // status shows idle
     {1 << AES_STATUS_IDLE_OFFSET,
      1 << AES_STATUS_IDLE_OFFSET},  // status shows idle
+    {1 << AES_STATUS_IDLE_OFFSET,
+     1 << AES_STATUS_IDLE_OFFSET},  // status shows idle
+    {1 << AES_STATUS_IDLE_OFFSET,
+     1 << AES_STATUS_IDLE_OFFSET},  // status shows idle
     {1 << AES_STATUS_OUTPUT_VALID_OFFSET,
      1 << AES_STATUS_OUTPUT_VALID_OFFSET},  // status shows output valid
     {CHECK_DATA_OUT ? 0xFFFFFFFF : 0x0, 0xceda8803},
@@ -980,6 +1005,10 @@ static const EXP_RESP tl_o_exp_resp[num_responses_max] = {
      1 << AES_STATUS_IDLE_OFFSET},  // status shows idle - setup
     {1 << AES_STATUS_IDLE_OFFSET,
      1 << AES_STATUS_IDLE_OFFSET},  // status shows idle - iv
+    {1 << AES_STATUS_IDLE_OFFSET,
+     1 << AES_STATUS_IDLE_OFFSET},  // status shows idle - hash subkey
+    {1 << AES_STATUS_IDLE_OFFSET,
+     1 << AES_STATUS_IDLE_OFFSET},  // status shows idle - encrypted initial counter block
     {1 << AES_STATUS_IDLE_OFFSET,
      1 << AES_STATUS_IDLE_OFFSET},  // status shows idle - aad 1
     {1 << AES_STATUS_IDLE_OFFSET,
