@@ -40,6 +40,7 @@ yosys "setattr -mod -set keep_hierarchy 1 *prim_xilinx*"
 yosys "setattr -mod -set keep_hierarchy 1 *aes_*_fsm_p*"
 yosys "setattr -mod -set keep_hierarchy 1 *aes_*_fsm_n*"
 yosys "setattr -mod -set keep_hierarchy 1 *aes_sel_buf_chk*"
+yosys "setattr -mod -set keep_hierarchy 1 *aes_ghash"
 
 # Synthesize.
 yosys "synth -nofsm $flatten_opt -top $lr_synth_top_module"
@@ -53,6 +54,7 @@ yosys "setattr -mod -set keep_hierarchy 0 *prim_xilinx*"
 yosys "setattr -mod -set keep_hierarchy 0 *aes_*_fsm_p*"
 yosys "setattr -mod -set keep_hierarchy 0 *aes_*_fsm_n*"
 yosys "setattr -mod -set keep_hierarchy 0 *aes_sel_buf_chk*"
+yosys "setattr -mod -set keep_hierarchy 0 *aes_ghash"
 
 yosys "write_verilog $lr_synth_alma_out"
 
@@ -61,6 +63,7 @@ yosys "setattr -mod -set keep_hierarchy 1 *prim_xilinx*"
 yosys "setattr -mod -set keep_hierarchy 1 *aes_*_fsm_p*"
 yosys "setattr -mod -set keep_hierarchy 1 *aes_*_fsm_n*"
 yosys "setattr -mod -set keep_hierarchy 1 *aes_sel_buf_chk*"
+yosys "setattr -mod -set keep_hierarchy 1 *aes_ghash"
 
 yosys "dfflibmap -liberty $lr_synth_cell_library_path"
 yosys "opt"
@@ -78,6 +81,7 @@ yosys "setattr -mod -set keep_hierarchy 0 *prim_xilinx*"
 yosys "setattr -mod -set keep_hierarchy 0 *aes_*_fsm_p*"
 yosys "setattr -mod -set keep_hierarchy 0 *aes_*_fsm_n*"
 yosys "setattr -mod -set keep_hierarchy 0 *aes_sel_buf_chk*"
+yosys "setattr -mod -set keep_hierarchy 1 *aes_ghash"
 
 # Final flattening.
 if { $lr_synth_flatten } {
