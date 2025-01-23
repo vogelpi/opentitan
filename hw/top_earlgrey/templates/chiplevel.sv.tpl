@@ -1180,11 +1180,11 @@ module chip_${top["name"]}_${target["name"]} #(
     .KmacSwKeyMasked(1),
     .KeymgrKmacEnMasking(1),
 % elif target["name"] == "cw310":
-    .KmacEnMasking(0),
+    .KmacEnMasking(1),
     .KmacSwKeyMasked(1),
-    .KeymgrKmacEnMasking(0),
-    .SecKmacCmdDelay(0),
-    .SecKmacIdleAcceptSwMsg(1'b0),
+    .KeymgrKmacEnMasking(1),
+    .SecKmacCmdDelay(320),
+    .SecKmacIdleAcceptSwMsg(1'b1),
 % endif
     .RomCtrlBootRomInitFile(BootRomInitFile),
     .RvCoreIbexRegFile(ibex_pkg::RegFileFPGA),
