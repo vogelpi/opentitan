@@ -599,7 +599,7 @@ module aes_ghash
 
     logic unused_ghash_add_in_sel_d;
     assign unused_ghash_add_in_sel_d = ^{{ghash_add_in_sel_d[0]}, {ghash_add_in_sel_d[1]}};
-    assign ghash_add_in_sel_q        = '{default: '0};
+    assign ghash_add_in_sel_q = '{default: ADD_IN_GHASH_IN};
     assign ghash_add_in_sel_err      = 2'b00;
     assign gf_mult1_in_sel_err       = 1'b0;
 
