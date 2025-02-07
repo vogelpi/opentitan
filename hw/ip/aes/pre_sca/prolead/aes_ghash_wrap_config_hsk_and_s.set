@@ -765,14 +765,16 @@ no_of_test_clock_cycles
 no_of_entries_in_report
 10
 
-% those wires which should be excluded for probing (all : to exclude them all, 0 : to exclude none,
-% e.g., 2 : to exclude two and name them)
-probes_exclude
-all
-
 % those wires which should be included for probing (all : to include them all, 0 : to include none,
 % e.g., 2 : to include two and name them)
 probes_include
 1
 
 {\u_aes_ghash*}
+
+% those wires which should be excluded for probing (all : to exclude them all, 0 : to exclude none,
+% e.g., 2 : to exclude two and name them)
+probes_exclude
+1
+
+\u_aes_ghash.gen_gf_mult1_mux.gf_mult1_op_b_rev*
