@@ -30,15 +30,18 @@ max_no_of_threads
 % total number of simulations (traces) in the tests, should be a factor of 64
 no_of_simulations
 1000000
+%64
 
 % number of simulations in each step, should be a factor of 64, and a divisor of no_of_simulations
 no_of_step_simulations
 8000
+%64
 
 % number of simulations in each step that result files are written, should be a factor of 64, and
 % a divisor of no_of_simulations and should be a factor of no_of_step_simulations
 no_of_step_write_results
 8000
+%64
 
 waveform_simulation % yes/no: whether VCD files of individual simulations are stored to disk (in
                     % main directory) or not, can be useful for debugging the configuration
@@ -57,7 +60,7 @@ no
 compact_distributions % yes/no: whether distributions (of probes) should be considered as compact.
                       % it is recommended to use 'no' only for small circuits and low security
                       % orders
-yes
+no
 
 minimize_probe_sets % yes/no: whether it should be tried to find equivalent probing sets.
                     % it is recommended to use 'yes' only for small circuits and low security
@@ -68,11 +71,9 @@ no
 no_of_groups
 2
 
-% The lowest 128 bits are used for the hash subkey and the upper 128 bits for the encrypted initial
-% counter block S. Only consider the hash subkey secret for this analysis, S is considered random
-% as it is different for every message.
-256'h$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-256'h$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$00000000000000000000000000000000
+% The lowest 128 bits are used for the hash subkey and the upper 128 bits for the encrypted initial counter block S.
+1024'h$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+1024'h$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$0000000000000000000000000000000000000000000000000000000000000000
 
 % name of the clock signal
 clock_signal_name
@@ -141,7 +142,7 @@ no_of_initial_clock_cycles
 [127:0]     s_i                  group_in0[255:128]
 [255:128]   s_i                  group_in1[255:128]
 [127:0]     data_in_prev_i       128'h00000000000000000000000000000000
-[127:0]     data_out_i           128'h00000000000000000000000000000000
+[127:0]     data_out_i           group_in0[383:256]
 
 %4 - De-assert in_valid_i. The DUT is busy clearing various registers.
             rst_ni               1'b1
@@ -158,7 +159,7 @@ no_of_initial_clock_cycles
 [127:0]     s_i                  group_in0[255:128]
 [255:128]   s_i                  group_in1[255:128]
 [127:0]     data_in_prev_i       128'h00000000000000000000000000000000
-[127:0]     data_out_i           128'h00000000000000000000000000000000
+[127:0]     data_out_i           group_in0[383:256]
 
 %5 - Wait for in_ready_o. The DUT is busy clearing various registers.
             rst_ni               1'b1
@@ -175,7 +176,7 @@ no_of_initial_clock_cycles
 [127:0]     s_i                  group_in0[255:128]
 [255:128]   s_i                  group_in1[255:128]
 [127:0]     data_in_prev_i       128'h00000000000000000000000000000000
-[127:0]     data_out_i           128'h00000000000000000000000000000000
+[127:0]     data_out_i           group_in0[383:256]
 
 %6 - Wait for in_ready_o. The DUT is busy clearing various registers.
             rst_ni               1'b1
@@ -192,7 +193,7 @@ no_of_initial_clock_cycles
 [127:0]     s_i                  group_in0[255:128]
 [255:128]   s_i                  group_in1[255:128]
 [127:0]     data_in_prev_i       128'h00000000000000000000000000000000
-[127:0]     data_out_i           128'h00000000000000000000000000000000
+[127:0]     data_out_i           group_in0[383:256]
 
 %7 - Wait for in_ready_o. The DUT is busy clearing various registers.
             rst_ni               1'b1
@@ -209,7 +210,7 @@ no_of_initial_clock_cycles
 [127:0]     s_i                  group_in0[255:128]
 [255:128]   s_i                  group_in1[255:128]
 [127:0]     data_in_prev_i       128'h00000000000000000000000000000000
-[127:0]     data_out_i           128'h00000000000000000000000000000000
+[127:0]     data_out_i           group_in0[383:256]
 
 %8 - Load the hash subkey.
             rst_ni               1'b1
@@ -226,7 +227,7 @@ no_of_initial_clock_cycles
 [127:0]     s_i                  group_in0[255:128]
 [255:128]   s_i                  group_in1[255:128]
 [127:0]     data_in_prev_i       128'h00000000000000000000000000000000
-[127:0]     data_out_i           128'h00000000000000000000000000000000
+[127:0]     data_out_i           group_in0[511:384]
 
 %9 - Load S. This will trigger the computation of the correction terms.
             rst_ni               1'b1
@@ -243,7 +244,7 @@ no_of_initial_clock_cycles
 [127:0]     s_i                  group_in0[255:128]
 [255:128]   s_i                  group_in1[255:128]
 [127:0]     data_in_prev_i       128'h00000000000000000000000000000000
-[127:0]     data_out_i           128'h00000000000000000000000000000000
+[127:0]     data_out_i           group_in0[639:512]
 
 %10 - De-assert in_valid_i. The DUT is busy computing correction terms.
             rst_ni               1'b1
@@ -260,7 +261,7 @@ no_of_initial_clock_cycles
 [127:0]     s_i                  group_in0[255:128]
 [255:128]   s_i                  group_in1[255:128]
 [127:0]     data_in_prev_i       128'h00000000000000000000000000000000
-[127:0]     data_out_i           128'h00000000000000000000000000000000
+[127:0]     data_out_i           group_in0[639:512]
 
 %11 - Wait for in_ready_o. The DUT is busy computing correction terms.
             rst_ni               1'b1
@@ -277,7 +278,7 @@ no_of_initial_clock_cycles
 [127:0]     s_i                  group_in0[255:128]
 [255:128]   s_i                  group_in1[255:128]
 [127:0]     data_in_prev_i       128'h00000000000000000000000000000000
-[127:0]     data_out_i           128'h00000000000000000000000000000000
+[127:0]     data_out_i           group_in0[639:512]
 
 %12 - Wait for in_ready_o. The DUT is busy computing correction terms.
             rst_ni               1'b1
@@ -294,7 +295,7 @@ no_of_initial_clock_cycles
 [127:0]     s_i                  group_in0[255:128]
 [255:128]   s_i                  group_in1[255:128]
 [127:0]     data_in_prev_i       128'h00000000000000000000000000000000
-[127:0]     data_out_i           128'h00000000000000000000000000000000
+[127:0]     data_out_i           group_in0[639:512]
 
 %13 - Wait for in_ready_o. The DUT is busy computing correction terms.
             rst_ni               1'b1
@@ -311,7 +312,7 @@ no_of_initial_clock_cycles
 [127:0]     s_i                  group_in0[255:128]
 [255:128]   s_i                  group_in1[255:128]
 [127:0]     data_in_prev_i       128'h00000000000000000000000000000000
-[127:0]     data_out_i           128'h00000000000000000000000000000000
+[127:0]     data_out_i           group_in0[639:512]
 
 %14 - Load first block. This will trigger the computation of an additional correction term.
             rst_ni               1'b1
@@ -328,7 +329,7 @@ no_of_initial_clock_cycles
 [127:0]     s_i                  group_in0[255:128]
 [255:128]   s_i                  group_in1[255:128]
 [127:0]     data_in_prev_i       128'h00000000000000000000000000000000
-[127:0]     data_out_i           128'h00000000000000000000000000000000
+[127:0]     data_out_i           group_in0[767:640]
 
 %15 - De-assert in_valid_i. The DUT is busy hashing the first block.
             rst_ni               1'b1
@@ -345,7 +346,7 @@ no_of_initial_clock_cycles
 [127:0]     s_i                  group_in0[255:128]
 [255:128]   s_i                  group_in1[255:128]
 [127:0]     data_in_prev_i       128'h00000000000000000000000000000000
-[127:0]     data_out_i           128'h00000000000000000000000000000000
+[127:0]     data_out_i           group_in0[767:640]
 
 %16 - Wait for in_ready_o. The DUT is busy hashing the first block.
             rst_ni               1'b1
@@ -362,7 +363,7 @@ no_of_initial_clock_cycles
 [127:0]     s_i                  group_in0[255:128]
 [255:128]   s_i                  group_in1[255:128]
 [127:0]     data_in_prev_i       128'h00000000000000000000000000000000
-[127:0]     data_out_i           128'h00000000000000000000000000000000
+[127:0]     data_out_i           group_in0[767:640]
 
 %17 - Wait for in_ready_o. The DUT is busy hashing the first block.
             rst_ni               1'b1
@@ -379,7 +380,7 @@ no_of_initial_clock_cycles
 [127:0]     s_i                  group_in0[255:128]
 [255:128]   s_i                  group_in1[255:128]
 [127:0]     data_in_prev_i       128'h00000000000000000000000000000000
-[127:0]     data_out_i           128'h00000000000000000000000000000000
+[127:0]     data_out_i           group_in0[767:640]
 
 %18 - Wait for in_ready_o. The DUT is busy hashing the first block.
             rst_ni               1'b1
@@ -396,7 +397,7 @@ no_of_initial_clock_cycles
 [127:0]     s_i                  group_in0[255:128]
 [255:128]   s_i                  group_in1[255:128]
 [127:0]     data_in_prev_i       128'h00000000000000000000000000000000
-[127:0]     data_out_i           128'h00000000000000000000000000000000
+[127:0]     data_out_i           group_in0[767:640]
 
 %19 - Wait for in_ready_o. The DUT is busy hashing the first block.
             rst_ni               1'b1
@@ -413,7 +414,7 @@ no_of_initial_clock_cycles
 [127:0]     s_i                  group_in0[255:128]
 [255:128]   s_i                  group_in1[255:128]
 [127:0]     data_in_prev_i       128'h00000000000000000000000000000000
-[127:0]     data_out_i           128'h00000000000000000000000000000000
+[127:0]     data_out_i           group_in0[767:640]
 
 %20 - Wait for in_ready_o. The DUT is busy hashing the first block.
             rst_ni               1'b1
@@ -430,7 +431,7 @@ no_of_initial_clock_cycles
 [127:0]     s_i                  group_in0[255:128]
 [255:128]   s_i                  group_in1[255:128]
 [127:0]     data_in_prev_i       128'h00000000000000000000000000000000
-[127:0]     data_out_i           128'h00000000000000000000000000000000
+[127:0]     data_out_i           group_in0[767:640]
 
 %21 - Wait for in_ready_o. The DUT is busy hashing the first block.
             rst_ni               1'b1
@@ -447,7 +448,7 @@ no_of_initial_clock_cycles
 [127:0]     s_i                  group_in0[255:128]
 [255:128]   s_i                  group_in1[255:128]
 [127:0]     data_in_prev_i       128'h00000000000000000000000000000000
-[127:0]     data_out_i           128'h00000000000000000000000000000000
+[127:0]     data_out_i           group_in0[767:640]
 
 %22 - Wait for in_ready_o. The DUT is busy hashing the first block.
             rst_ni               1'b1
@@ -464,7 +465,7 @@ no_of_initial_clock_cycles
 [127:0]     s_i                  group_in0[255:128]
 [255:128]   s_i                  group_in1[255:128]
 [127:0]     data_in_prev_i       128'h00000000000000000000000000000000
-[127:0]     data_out_i           128'h00000000000000000000000000000000
+[127:0]     data_out_i           group_in0[767:640]
 
 %23 - Load second block.
             rst_ni               1'b1
@@ -481,7 +482,7 @@ no_of_initial_clock_cycles
 [127:0]     s_i                  group_in0[255:128]
 [255:128]   s_i                  group_in1[255:128]
 [127:0]     data_in_prev_i       128'h00000000000000000000000000000000
-[127:0]     data_out_i           128'h00000000000000000000000000000000
+[127:0]     data_out_i           group_in0[895:768]
 
 %24 - De-assert in_valid_i. The DUT is busy hashing the second block.
             rst_ni               1'b1
@@ -498,7 +499,7 @@ no_of_initial_clock_cycles
 [127:0]     s_i                  group_in0[255:128]
 [255:128]   s_i                  group_in1[255:128]
 [127:0]     data_in_prev_i       128'h00000000000000000000000000000000
-[127:0]     data_out_i           128'h00000000000000000000000000000000
+[127:0]     data_out_i           group_in0[895:768]
 
 %25 - Wait for in_ready_o. The DUT is busy hashing the second block.
             rst_ni               1'b1
@@ -515,7 +516,7 @@ no_of_initial_clock_cycles
 [127:0]     s_i                  group_in0[255:128]
 [255:128]   s_i                  group_in1[255:128]
 [127:0]     data_in_prev_i       128'h00000000000000000000000000000000
-[127:0]     data_out_i           128'h00000000000000000000000000000000
+[127:0]     data_out_i           group_in0[895:768]
 
 %26 - Wait for in_ready_o. The DUT is busy hashing the second block.
             rst_ni               1'b1
@@ -532,7 +533,7 @@ no_of_initial_clock_cycles
 [127:0]     s_i                  group_in0[255:128]
 [255:128]   s_i                  group_in1[255:128]
 [127:0]     data_in_prev_i       128'h00000000000000000000000000000000
-[127:0]     data_out_i           128'h00000000000000000000000000000000
+[127:0]     data_out_i           group_in0[895:768]
 
 %27 - Wait for in_ready_o. The DUT is busy hashing the second block.
             rst_ni               1'b1
@@ -549,7 +550,7 @@ no_of_initial_clock_cycles
 [127:0]     s_i                  group_in0[255:128]
 [255:128]   s_i                  group_in1[255:128]
 [127:0]     data_in_prev_i       128'h00000000000000000000000000000000
-[127:0]     data_out_i           128'h00000000000000000000000000000000
+[127:0]     data_out_i           group_in0[895:768]
 
 %28 - Wait for in_ready_o. The DUT is busy hashing the second block.
             rst_ni               1'b1
@@ -566,7 +567,7 @@ no_of_initial_clock_cycles
 [127:0]     s_i                  group_in0[255:128]
 [255:128]   s_i                  group_in1[255:128]
 [127:0]     data_in_prev_i       128'h00000000000000000000000000000000
-[127:0]     data_out_i           128'h00000000000000000000000000000000
+[127:0]     data_out_i           group_in0[895:768]
 
 %29 - Wait for in_ready_o. The DUT is busy hashing the second block.
             rst_ni               1'b1
@@ -583,7 +584,7 @@ no_of_initial_clock_cycles
 [127:0]     s_i                  group_in0[255:128]
 [255:128]   s_i                  group_in1[255:128]
 [127:0]     data_in_prev_i       128'h00000000000000000000000000000000
-[127:0]     data_out_i           128'h00000000000000000000000000000000
+[127:0]     data_out_i           group_in0[895:768]
 
 %30 - Trigger tag generation.
             rst_ni               1'b1
@@ -599,7 +600,7 @@ no_of_initial_clock_cycles
 [255:128]   hash_subkey_i        group_in1[127:0]
 [127:0]     s_i                  group_in0[255:128]
 [255:128]   s_i                  group_in1[255:128]
-[127:0]     data_in_prev_i       128'h00000000000000000000000000000000
+[127:0]     data_in_prev_i       group_in0[1023:896]
 [127:0]     data_out_i           128'h00000000000000000000000000000000
 
 %31 - De-assert in_valid_i. The DUT is busy generating the final tag.
@@ -616,7 +617,7 @@ no_of_initial_clock_cycles
 [255:128]   hash_subkey_i        group_in1[127:0]
 [127:0]     s_i                  group_in0[255:128]
 [255:128]   s_i                  group_in1[255:128]
-[127:0]     data_in_prev_i       128'h00000000000000000000000000000000
+[127:0]     data_in_prev_i       group_in0[1023:896]
 [127:0]     data_out_i           128'h00000000000000000000000000000000
 
 %32 - Wait for out_valid_o. The DUT is busy generating the final tag.
@@ -633,7 +634,7 @@ no_of_initial_clock_cycles
 [255:128]   hash_subkey_i        group_in1[127:0]
 [127:0]     s_i                  group_in0[255:128]
 [255:128]   s_i                  group_in1[255:128]
-[127:0]     data_in_prev_i       128'h00000000000000000000000000000000
+[127:0]     data_in_prev_i       group_in0[1023:896]
 [127:0]     data_out_i           128'h00000000000000000000000000000000
 
 %33 - Wait for out_valid_o. The DUT is busy generating the final tag.
@@ -650,7 +651,7 @@ no_of_initial_clock_cycles
 [255:128]   hash_subkey_i        group_in1[127:0]
 [127:0]     s_i                  group_in0[255:128]
 [255:128]   s_i                  group_in1[255:128]
-[127:0]     data_in_prev_i       128'h00000000000000000000000000000000
+[127:0]     data_in_prev_i       group_in0[1023:896]
 [127:0]     data_out_i           128'h00000000000000000000000000000000
 
 %34 - Wait for out_valid_o. The DUT is busy generating the final tag.
@@ -667,7 +668,7 @@ no_of_initial_clock_cycles
 [255:128]   hash_subkey_i        group_in1[127:0]
 [127:0]     s_i                  group_in0[255:128]
 [255:128]   s_i                  group_in1[255:128]
-[127:0]     data_in_prev_i       128'h00000000000000000000000000000000
+[127:0]     data_in_prev_i       group_in0[1023:896]
 [127:0]     data_out_i           128'h00000000000000000000000000000000
 
 %35 - Wait for out_valid_o. The DUT is busy generating the final tag.
@@ -684,7 +685,7 @@ no_of_initial_clock_cycles
 [255:128]   hash_subkey_i        group_in1[127:0]
 [127:0]     s_i                  group_in0[255:128]
 [255:128]   s_i                  group_in1[255:128]
-[127:0]     data_in_prev_i       128'h00000000000000000000000000000000
+[127:0]     data_in_prev_i       group_in0[1023:896]
 [127:0]     data_out_i           128'h00000000000000000000000000000000
 
 %36 - Wait for out_valid_o. The DUT is busy generating the final tag.
@@ -701,7 +702,7 @@ no_of_initial_clock_cycles
 [255:128]   hash_subkey_i        group_in1[127:0]
 [127:0]     s_i                  group_in0[255:128]
 [255:128]   s_i                  group_in1[255:128]
-[127:0]     data_in_prev_i       128'h00000000000000000000000000000000
+[127:0]     data_in_prev_i       group_in0[1023:896]
 [127:0]     data_out_i           128'h00000000000000000000000000000000
 
 %37 - Wait for out_valid_o. The DUT is busy generating the final tag.
@@ -718,7 +719,7 @@ no_of_initial_clock_cycles
 [255:128]   hash_subkey_i        group_in1[127:0]
 [127:0]     s_i                  group_in0[255:128]
 [255:128]   s_i                  group_in1[255:128]
-[127:0]     data_in_prev_i       128'h00000000000000000000000000000000
+[127:0]     data_in_prev_i       group_in0[1023:896]
 [127:0]     data_out_i           128'h00000000000000000000000000000000
 
 %38 - Wait for out_valid_o. The DUT is busy generating the final tag.
@@ -735,7 +736,7 @@ no_of_initial_clock_cycles
 [255:128]   hash_subkey_i        group_in1[127:0]
 [127:0]     s_i                  group_in0[255:128]
 [255:128]   s_i                  group_in1[255:128]
-[127:0]     data_in_prev_i       128'h00000000000000000000000000000000
+[127:0]     data_in_prev_i       group_in0[1023:896]
 [127:0]     data_out_i           128'h00000000000000000000000000000000
 
 % the condition to check to terminate the simulation (e.g., done signal is high) or a number of
@@ -767,14 +768,19 @@ no_of_test_clock_cycles
 no_of_entries_in_report
 10
 
-% those wires which should be excluded for probing (all : to exclude them all, 0 : to exclude none,
-% e.g., 2 : to exclude two and name them)
-probes_exclude
-all
-
 % those wires which should be included for probing (all : to include them all, 0 : to include none,
 % e.g., 2 : to include two and name them)
 probes_include
 1
 
 {\u_aes_ghash*}
+
+% those wires which should be excluded for probing (all : to exclude them all, 0 : to exclude none,
+% e.g., 2 : to exclude two and name them)
+probes_exclude
+%all
+3
+
+\u_aes_ghash.aes_pkg_aes_ghash_reverse_bit_order$func$syn_out/aes_ghash_wrap_2025_02_04_17_26_51/generated/aes_ghash.v:415$20155.$result*
+\u_aes_ghash.gen_gf_mult1_mux.gf_mult1_in_sel_q_raw*
+\u_aes_ghash.add_s_en_q
