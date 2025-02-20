@@ -29,7 +29,8 @@ extern "C" {
     value(_, FvsrKeyBatchGenerate) \
     value(_, FvsrKeySet) \
     value(_, FvsrKeyStartBatchGenerate) \
-    value(_, GcmFvsrBatch) \
+    value(_, GcmFvsrBatchIvKey) \
+    value(_, GcmFvsrBatchPtxAad) \
     value(_, GcmSingleEncrypt) \
     value(_, Init) \
     value(_, KeySet) \
