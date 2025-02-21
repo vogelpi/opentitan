@@ -29,20 +29,20 @@ max_no_of_threads
 
 % total number of simulations (traces) in the tests, should be a factor of 64
 no_of_simulations
-1000000
+64
 
 % number of simulations in each step, should be a factor of 64, and a divisor of no_of_simulations
 no_of_step_simulations
-8000
+64
 
 % number of simulations in each step that result files are written, should be a factor of 64, and
 % a divisor of no_of_simulations and should be a factor of no_of_step_simulations
 no_of_step_write_results
-8000
+64
 
 waveform_simulation % yes/no: whether VCD files of individual simulations are stored to disk (in
                     % main directory) or not, can be useful for debugging the configuration
-no
+yes
 
 % maximum number of probes, i.e., order of test
 order_of_test
@@ -767,17 +767,14 @@ no_of_test_clock_cycles
 no_of_entries_in_report
 10
 
+% those wires which should be excluded for probing (all : to exclude them all, 0 : to exclude none,
+% e.g., 2 : to exclude two and name them)
+probes_exclude
+all
+
 % those wires which should be included for probing (all : to include them all, 0 : to include none,
 % e.g., 2 : to include two and name them)
 probes_include
 1
 
 {\u_aes_ghash*}
-
-% those wires which should be excluded for probing (all : to exclude them all, 0 : to exclude none,
-% e.g., 2 : to exclude two and name them)
-probes_exclude
-%all
-1
-
-\u_aes_ghash.gen_gf_mult1_mux.gf_mult1_op_b_rev*

@@ -549,14 +549,16 @@ module aes_ghash
     logic [GFMultStagesPerCycle-1:0] gf_mult1_op_b_rev_slice_d;
     logic [GFMultStagesPerCycle-1:0] gf_mult1_op_b_rev_slice_q;
     assign gf_mult1_op_b_rev_slice_d = gf_mult1_op_b_rev[GCMDegree-1 -: GFMultStagesPerCycle];
-    always_ff @(posedge clk_i or negedge rst_ni) begin : gf_mult1_op_b_slice_reg
-      if (!rst_ni) begin
-        gf_mult1_op_b_rev_slice_q <= '0;
-      end else begin
-        gf_mult1_op_b_rev_slice_q <= gf_mult1_op_b_rev_slice_d;
-      end
-    end
+    prim_flop #(
+      .Width     (GFMultStagesPerCycle),
+      .ResetValue('0)
+    ) u_prim_flop_slice (
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
+      .d_i(gf_mult1_op_b_rev_slice_d),
+      .q_o(gf_mult1_op_b_rev_slice_q)
+    );
     assign gf_mult_op_b_rev[1] =
         {gf_mult1_op_b_rev_slice_q, gf_mult1_op_b_rev[GCMDegree-GFMultStagesPerCycle-1:0]};
   end
