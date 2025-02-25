@@ -64,6 +64,10 @@ class aes_nist_vectors_gcm_vseq extends aes_base_vseq;
       ral.ctrl_shadowed.mode.set(nist_vectors[i].mode);
       ral.ctrl_shadowed.prng_reseed_rate.set(PER_8K);
       csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
+      void'(ral.ctrl_shadowed.operation.predict(AES_ENC));
+      void'(ral.ctrl_shadowed.key_len.predict(nist_vectors[i].key_len));
+      void'(ral.ctrl_shadowed.mode.predict(nist_vectors[i].mode));
+      void'(ral.ctrl_shadowed.prng_reseed_rate.predict(PER_8K));
 
       // Put AES-GCM into init phase.
       set_gcm_phase(GCM_INIT, 16, 1);
@@ -185,6 +189,9 @@ class aes_nist_vectors_gcm_vseq extends aes_base_vseq;
       ral.ctrl_shadowed.key_len.set(nist_vectors[i].key_len);
       ral.ctrl_shadowed.mode.set(nist_vectors[i].mode);
       csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
+      void'(ral.ctrl_shadowed.operation.predict(AES_DEC));
+      void'(ral.ctrl_shadowed.key_len.predict(nist_vectors[i].key_len));
+      void'(ral.ctrl_shadowed.mode.predict(nist_vectors[i].mode));
 
       // Put AES-GCM into init phase.
       set_gcm_phase(GCM_INIT, 16, 1);
