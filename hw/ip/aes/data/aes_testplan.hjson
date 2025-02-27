@@ -144,13 +144,10 @@
       name: gcm_save_and_restore
       desc: '''
             Verify that saving and restoring contexts in GCM works correctly.
-            When triggered, two different scenarios are possible:
-              - Save and restore the same context
-              - Save and restore with a different message scheduled in between
-            This feature may be randomly exercised during tests, alternatively a dedicated but randomized test sequence may be used.
+            When triggered, save the current context, clear the entire state, restore the context, and proceed with the operation.
             '''
       stage: V2
-      tests: []
+      tests: ["aes_gcm_save_restore"]
     }
     {
       name: reseeding
@@ -207,9 +204,19 @@ covergroups: [
            Further more it covers that also illegal values have been tested.
            Individual control settings that are covered include:
            - phase (all phases including illegal values)
-           - restore after init/aad/text
+           - restore after init
            - save after aad/text
-           - num_valid_bytes (all valid numbers from 1 to 16 for the last AAD and last TEXT block, all invalid values)
+           '''
+    }
+    {
+     name: gcm_len_cg
+     desc: '''
+           Covers that, when in AES-GCM mode, different sized AAD and TEXT blocks have
+           been tested. This includes:
+           - enc / dec
+           - zero sized AAD block
+           - Full and partial AAD / TEXT blocks
+           - Single and multiple AAD / TEXT blocks
            '''
     }
     {

@@ -105,12 +105,16 @@ class aes_scoreboard extends cip_base_scoreboard #(
 
   function void on_ctrl_gcm_shadowed_write(logic [31:0] wdata);
     case (get_field_val(ral.ctrl_gcm_shadowed.phase, wdata))
-      GCM_INIT:  input_item.item_type = AES_CFG;
-      GCM_TEXT:  input_item.item_type = AES_DATA;
-      GCM_AAD:   input_item.item_type = AES_GCM_AAD;
-      GCM_TAG:   input_item.item_type = AES_GCM_TAG;
+      GCM_INIT:     input_item.item_type = AES_CFG;
+      GCM_TEXT:     input_item.item_type = AES_DATA;
+      GCM_AAD:      input_item.item_type = AES_GCM_AAD;
+      GCM_TAG:      input_item.item_type = AES_GCM_TAG;
+      GCM_SAVE:     input_item.item_type = AES_GCM_SAVE;
+      GCM_RESTORE:  input_item.item_type = AES_GCM_RESTORE;
       default:   input_item.item_type = AES_CFG;
     endcase
+
+    cov_if.cg_ctrl_gcm_reg_sample(get_field_val(ral.ctrl_gcm_shadowed.phase, wdata));
 
     input_item.data_len = get_field_val(ral.ctrl_gcm_shadowed.num_valid_bytes, wdata);
   endfunction
@@ -654,7 +658,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
                     msg.aes_operation == AES_DEC ? 1'b1 : 1'b0;
 
         if (msg.aes_mode == AES_GCM) begin
-          in_aad = msg.input_aad;
+          in_aad = msg.aad_length == 0 ? {'0} : msg.input_aad;
           out_tag = msg.output_tag;
         end else begin
           // All modes except GCM do not take an AAD as an input. Just pass '0
