@@ -15,7 +15,12 @@ else
   TOP_MODULE=aes_cipher_core
 fi
 if [[ "$#" -gt 1 ]]; then
-  NETLIST_DIR=$2
+  SETTINGS=$2
+else
+  SETTINGS="${TOP_MODULE}_config.set"
+fi
+if [[ "$#" -gt 2 ]]; then
+  NETLIST_DIR=$3
 else
   NETLIST_DIR="${REPO_TOP}/hw/ip/aes/pre_syn/syn_out/latest/generated"
 fi
@@ -31,6 +36,6 @@ ln -s "${OUT_DIR#out/}" out/latest
 PROLEAD -lf library.lib -ln NANG45 \
         -mn ${TOP_MODULE} \
         -df "${NETLIST_DIR}/${TOP_MODULE}_netlist.v" \
-        -cf "${TOP_MODULE}_config.set" \
+        -cf ${SETTINGS} \
         -rf ${OUT_DIR} \
         2>&1 | tee "${OUT_DIR}/log.txt"
