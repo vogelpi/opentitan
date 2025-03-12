@@ -210,6 +210,15 @@
       tests: ["aes_fi", "aes_control_fi", "aes_ctr_fi"]
     }
     {
+      name: sec_cm_ghash_fsm_sparse
+      desc: '''
+            Verify the countermeasure(s) GHASH.FSM.SPARSE.
+            It is ensured that upon forcing the state register of the GHASH FSM to an invalid value, the DUT stops processing data, locks up and triggers a fatal alert.
+            '''
+      stage: V2S
+      tests: ["aes_fi"]
+    }
+    {
       name: sec_cm_ctrl_sparse
       desc: '''
             Verify the countermeasure(s) CTRL.SPARSE.
