@@ -354,6 +354,9 @@
     { name: "AUX.CONFIG.REGWEN",
       desc: "Auxiliary control register can be locked until reset."
     }
+    { name: "GCM.CONFIG.SHADOW",
+      desc: "GCM control register shadowed."
+    }
     { name: "KEY.SIDELOAD",
       desc: "The key can be loaded from a key manager via sideload interface without exposing it to software."
     }
