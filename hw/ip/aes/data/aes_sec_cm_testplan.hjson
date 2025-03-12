@@ -45,6 +45,12 @@
       tests: ["aes_shadow_reg_errors"]
     }
     {
+      name: sec_cm_gcm_config_shadow
+      desc: "Verify the countermeasure(s) GCM.CONFIG.SHADOW."
+      stage: V2S
+      tests: ["aes_shadow_reg_errors"]
+    }
+    {
       name: sec_cm_main_config_sparse
       desc: '''
             Verify the countermeasure(s) MAIN.CONFIG.SPARSE.
