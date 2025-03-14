@@ -357,6 +357,9 @@
     { name: "GCM.CONFIG.SHADOW",
       desc: "GCM control register shadowed."
     }
+    { name: "GCM.CONFIG.SPARSE",
+      desc: "Critical fields in GCM control register one-hot encoded."
+    }
     { name: "KEY.SIDELOAD",
       desc: "The key can be loaded from a key manager via sideload interface without exposing it to software."
     }
