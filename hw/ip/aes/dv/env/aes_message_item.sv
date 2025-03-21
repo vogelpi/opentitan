@@ -110,6 +110,7 @@ class aes_message_item extends uvm_sequence_item;
   // [1]: reseed error
   // [2]: mode error
   // [3]: key_len
+  // [4]: gcm_phase
   rand cfg_error_type_t  cfg_error_type;
   // run AES in manual mode
   rand bit               manual_operation;
@@ -134,9 +135,17 @@ class aes_message_item extends uvm_sequence_item;
   // Constraints                       //
   ///////////////////////////////////////
 
-  constraint data_c { message_length inside { [message_len_min:message_len_max] };}
+  constraint data_c {
+    message_length inside { [message_len_min:message_len_max] };
+    (message_length % 16) dist {0     :/ 1,
+                                [1:$] :/ 1};
+  }
 
-  constraint aad_c { aad_length inside { [aad_len_min:aad_len_max] };}
+  constraint aad_c {
+    aad_length inside { [aad_len_min:aad_len_max] };
+    (aad_length % 16) dist {0     :/ 1,
+                            [1:$] :/ 1};
+  }
 
   constraint has_config_error_c {
     if (error_types.cfg) {
@@ -150,11 +159,12 @@ class aes_message_item extends uvm_sequence_item;
   constraint config_error_type_c {
     solve has_config_error before cfg_error_type;
     if (has_config_error) {
-      cfg_error_type inside {[1:15]};
-      config_error_type_en.op       == 0 -> cfg_error_type.op       == 0;
-      config_error_type_en.rsd_rate == 0 -> cfg_error_type.rsd_rate == 0;
-      config_error_type_en.mode     == 0 -> cfg_error_type.mode     == 0;
-      config_error_type_en.key_len  == 0 -> cfg_error_type.key_len  == 0;
+      cfg_error_type inside {[1:31]};
+      config_error_type_en.op        == 0 -> cfg_error_type.op        == 0;
+      config_error_type_en.rsd_rate  == 0 -> cfg_error_type.rsd_rate  == 0;
+      config_error_type_en.mode      == 0 -> cfg_error_type.mode      == 0;
+      config_error_type_en.key_len   == 0 -> cfg_error_type.key_len   == 0;
+      config_error_type_en.gcm_phase == 0 -> cfg_error_type.gcm_phase == 0;
     } else {
       cfg_error_type == '0;
     }
@@ -382,16 +392,17 @@ class aes_message_item extends uvm_sequence_item;
 
   function string cfg_error_string();
     string str;
-    str = {      $sformatf("\n\t ----| error_types:             %03b", error_types)};
-    str = {str,  $sformatf("\n\t ----| has_config_error:        %01b", has_config_error)};
-    str = {str,  $sformatf("\n\t ----| cfg_error_type.op:       %01b", cfg_error_type.op)};
-    str = {str,  $sformatf("\n\t ----| cfg_error_type.rsd_rate: %01b", cfg_error_type.rsd_rate)};
-    str = {str,  $sformatf("\n\t ----| cfg_error_type.mode:     %01b", cfg_error_type.mode)};
-    str = {str,  $sformatf("\n\t ----| cfg_error_type.key_len:  %01b", cfg_error_type.key_len)};
-    str = {str,  $sformatf("\n\t ----| aes_operation:           %02b", aes_operation)};
-    str = {str,  $sformatf("\n\t ----| reseed_rate:             %03b", reseed_rate)};
-    str = {str,  $sformatf("\n\t ----| aes_mode:                %06b", aes_mode)};
-    str = {str,  $sformatf("\n\t ----| aes_keylen:              %03b", aes_keylen)};
+    str = {      $sformatf("\n\t ----| error_types:              %03b", error_types)};
+    str = {str,  $sformatf("\n\t ----| has_config_error:         %01b", has_config_error)};
+    str = {str,  $sformatf("\n\t ----| cfg_error_type.op:        %01b", cfg_error_type.op)};
+    str = {str,  $sformatf("\n\t ----| cfg_error_type.rsd_rate:  %01b", cfg_error_type.rsd_rate)};
+    str = {str,  $sformatf("\n\t ----| cfg_error_type.mode:      %01b", cfg_error_type.mode)};
+    str = {str,  $sformatf("\n\t ----| cfg_error_type.key_len:   %01b", cfg_error_type.key_len)};
+    str = {str,  $sformatf("\n\t ----| cfg_error_type.gcm_phase: %01b", cfg_error_type.gcm_phase)};
+    str = {str,  $sformatf("\n\t ----| aes_operation:            %02b", aes_operation)};
+    str = {str,  $sformatf("\n\t ----| reseed_rate:              %03b", reseed_rate)};
+    str = {str,  $sformatf("\n\t ----| aes_mode:                 %06b", aes_mode)};
+    str = {str,  $sformatf("\n\t ----| aes_keylen:               %03b", aes_keylen)};
     return str;
   endfunction
 

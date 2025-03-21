@@ -354,6 +354,12 @@
     { name: "AUX.CONFIG.REGWEN",
       desc: "Auxiliary control register can be locked until reset."
     }
+    { name: "GCM.CONFIG.SHADOW",
+      desc: "GCM control register shadowed."
+    }
+    { name: "GCM.CONFIG.SPARSE",
+      desc: "Critical fields in GCM control register one-hot encoded."
+    }
     { name: "KEY.SIDELOAD",
       desc: "The key can be loaded from a key manager via sideload interface without exposing it to software."
     }
@@ -381,6 +387,7 @@
     { name: "KEY.MASKING",
       desc: '''
         1st-order domain-oriented masking of the cipher core including data path and key expand.
+        1st-order masking of the GHASH operation.
         Can optionally be disabled via compile-time Verilog parameter for instantiations that don't need SCA hardening.
       '''
     }
@@ -405,6 +412,9 @@
     { name: "CTR.FSM.REDUN",
       desc: "The CTR mode FSM uses multiple, independent logic rails."
     }
+    { name: "GHASH.FSM.SPARSE",
+      desc: "The GHASH FSM uses a sparse state encoding."
+    }
     { name: "CTRL.SPARSE",
       desc: "Critical control signals such as handshake and MUX control signals use sparse encodings."
     }
@@ -414,7 +424,7 @@
     { name: "MAIN.FSM.LOCAL_ESC",
       desc: '''
         The main control FSM moves to a terminal error state upon local escalation.
-        Can be triggered by MAIN.FSM.SPARSE, MAIN.FSM.REDUN, CTRL.SPARSE, as well as CIPHER.FSM.LOCAL_ESC, CTR.FSM.LOCAL_ESC.
+        Can be triggered by MAIN.FSM.SPARSE, MAIN.FSM.REDUN, CTRL.SPARSE, as well as CIPHER.FSM.LOCAL_ESC, CTR.FSM.LOCAL_ESC, GHASH.FSM.LOCAL_ESC.
       '''
     }
     { name: "CIPHER.FSM.LOCAL_ESC",
@@ -427,6 +437,12 @@
       desc: '''
         The CTR mode FSM moves to a terminal error state upon local escalation.
         Can be triggered by CTR.FSM.SPARSE, CTR.FSM.REDUN, and CTRL.SPARSE.
+      '''
+    }
+    { name: "GHASH.FSM.LOCAL_ESC",
+      desc: '''
+        The GHASH FSM moves to a terminal error state upon local escalation.
+        Can be triggered by GHASH.FSM.SPARSE, CTRL.SPARSE, as well as MAIN.FSM.LOCAL_ESC.
       '''
     }
     { name: "DATA_REG.LOCAL_ESC",
