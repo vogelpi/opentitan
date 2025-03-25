@@ -76,7 +76,7 @@ Security      | [SEC_CM_DOCUMENTED][]     | Done        |
  Type         | Item                         | Resolution  | Note/Collaterals
 --------------|------------------------------|-------------|------------------
 Security      | [SEC_CM_ASSETS_LISTED][]     | Done        |
-Security      | [SEC_CM_IMPLEMENTED][]       | Done        | Datapath FI hardening in progress (not strictly required)
+Security      | [SEC_CM_IMPLEMENTED][]       | Done        | Datapath FI hardening and multi-rail GHASH FSM implementation not strictly required, these may get added later
 Security      | [SEC_CM_RND_CNST][]          | Done        |
 Security      | [SEC_CM_NON_RESET_FLOPS][]   | Done        |
 Security      | [SEC_CM_SHADOW_REGS][]       | Done        |
