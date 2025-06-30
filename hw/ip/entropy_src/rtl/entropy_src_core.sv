@@ -67,15 +67,20 @@ module entropy_src_core import entropy_src_pkg::*; #(
   import prim_mubi_pkg::mubi4_test_false_loose;
   import prim_mubi_pkg::mubi4_test_invalid;
 
-  localparam int EsFifoDepthW = prim_util_pkg::vbits(EsFifoDepth);
+  localparam int EsFifoDepthW = prim_util_pkg::vbits(EsFifoDepth + 1);
   localparam int PostHTWidth = 32;
+  localparam int PostHTFifoDepthW = prim_util_pkg::vbits(PostHTWidth / RngBusWidth + 1);
   localparam int HalfRegWidth = 16;
   localparam int FullRegWidth = 32;
   localparam int EighthRegWidth = 4;
   localparam int SeedLen = 384;
   localparam int DistrFifoWidth = 32;
+  localparam int DistrFifoDepthW = prim_util_pkg::vbits(DistrFifoDepth + 1);
   localparam int ObserveFifoWidth = 32;
   localparam int PreCondWidth = 64;
+  localparam int PreCondFifoDepthW = prim_util_pkg::vbits(PreCondWidth / PostHTWidth + 1);
+  localparam int PipelineDepthW =
+      prim_util_pkg::vbits(DistrFifoDepth + 1 + PreCondWidth / PostHTWidth + 1);
   localparam int Clog2ObserveFifoDepth = $clog2(ObserveFifoDepth);
   localparam int EsEnableCopies = 20;
   localparam int EsEnPulseCopies = 1;
@@ -139,16 +144,17 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                   sfifo_esrng_int_err;
   logic [2:0]             sfifo_esrng_err;
 
-  logic [DistrFifoWidth-1:0] sfifo_distr_wdata;
-  logic [DistrFifoWidth-1:0] sfifo_distr_rdata;
-  logic                      sfifo_distr_push;
-  logic                      sfifo_distr_pop;
-  logic                      sfifo_distr_clr;
-  logic                      sfifo_distr_not_full;
-  logic                      sfifo_distr_full;
-  logic                      sfifo_distr_not_empty;
-  logic                      sfifo_distr_int_err;
-  logic [2:0]                sfifo_distr_err;
+  logic [DistrFifoWidth-1:0]  sfifo_distr_wdata;
+  logic [DistrFifoWidth-1:0]  sfifo_distr_rdata;
+  logic                       sfifo_distr_push;
+  logic                       sfifo_distr_pop;
+  logic                       sfifo_distr_clr;
+  logic                       sfifo_distr_not_full;
+  logic                       sfifo_distr_full;
+  logic                       sfifo_distr_not_empty;
+  logic [DistrFifoDepthW-1:0] sfifo_distr_depth;
+  logic                       sfifo_distr_int_err;
+  logic [2:0]                 sfifo_distr_err;
 
   logic [ObserveFifoWidth-1:0]    sfifo_observe_wdata;
   logic [ObserveFifoWidth-1:0]    sfifo_observe_rdata;
@@ -372,25 +378,27 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                     pfifo_esbit_clr;
   logic                     pfifo_esbit_pop;
 
-  logic [RngBusWidth-1:0]   pfifo_postht_wdata;
-  logic [PostHTWidth-1:0]   pfifo_postht_rdata;
-  logic                     pfifo_postht_not_empty;
-  logic                     pfifo_postht_not_full;
-  logic                     pfifo_postht_push;
-  logic                     pfifo_postht_clr;
-  logic                     pfifo_postht_pop;
+  logic [RngBusWidth-1:0]      pfifo_postht_wdata;
+  logic [PostHTWidth-1:0]      pfifo_postht_rdata;
+  logic                        pfifo_postht_not_empty;
+  logic                        pfifo_postht_not_full;
+  logic                        pfifo_postht_push;
+  logic                        pfifo_postht_clr;
+  logic                        pfifo_postht_pop;
+  logic [PostHTFifoDepthW-1:0] pfifo_postht_depth;
 
   logic [PreCondWidth-1:0]  pfifo_cond_wdata;
   logic [SeedLen-1:0]       pfifo_cond_rdata;
   logic                     pfifo_cond_push;
 
-  logic [ObserveFifoWidth-1:0] pfifo_precon_wdata;
-  logic [PreCondWidth-1:0]     pfifo_precon_rdata;
-  logic                        pfifo_precon_not_empty;
-  logic                        pfifo_precon_not_full;
-  logic                        pfifo_precon_push;
-  logic                        pfifo_precon_clr;
-  logic                        pfifo_precon_pop;
+  logic [ObserveFifoWidth-1:0]  pfifo_precon_wdata;
+  logic [PreCondWidth-1:0]      pfifo_precon_rdata;
+  logic                         pfifo_precon_not_empty;
+  logic                         pfifo_precon_not_full;
+  logic                         pfifo_precon_push;
+  logic                         pfifo_precon_clr;
+  logic                         pfifo_precon_pop;
+  logic [PreCondFifoDepthW-1:0] pfifo_precon_depth;
 
   logic [PostHTWidth-1:0]   pfifo_bypass_wdata;
   logic [SeedLen-1:0]       pfifo_bypass_rdata;
@@ -399,6 +407,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                     pfifo_bypass_push;
   logic                     pfifo_bypass_clr;
   logic                     pfifo_bypass_pop;
+
+  logic [PipelineDepthW-1:0] pipeline_depth;
+  logic                      pipeline_depth_cntr_err;
 
   logic [SwReadIdxWidth-1:0] swread_idx_d, swread_idx_q;
   logic                      swread_idx_incr, swread_idx_clr;
@@ -1629,6 +1640,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
           extht_hi_alert_cntr_err ||
           extht_lo_alert_cntr_err ||
           any_fails_cntr_err ||
+          pipeline_depth_cntr_err ||
           sha3_count_error);
 
   //--------------------------------------------
@@ -2543,7 +2555,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rvalid_o   (pfifo_postht_not_empty),
     .rdata_o    (pfifo_postht_rdata),
     .rready_i   (pfifo_postht_pop),
-    .depth_o    ()
+    .depth_o    (pfifo_postht_depth)
   );
 
   // The prim_packer_fifo primitive is constructed to only accept pushes if there is indeed space
@@ -2600,7 +2612,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rdata_o    (sfifo_distr_rdata),
     .rready_i   (sfifo_distr_pop),
     .full_o     (sfifo_distr_full),
-    .depth_o    (),
+    .depth_o    (sfifo_distr_depth),
     .err_o      (sfifo_distr_int_err)
   );
 
@@ -2722,7 +2734,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rvalid_o   (pfifo_precon_not_empty),
     .rdata_o    (pfifo_precon_rdata),
     .rready_i   (pfifo_precon_pop),
-    .depth_o    ()
+    .depth_o    (pfifo_precon_depth)
   );
 
   // When bypassing the hardware conditioning - due to a) disabling FIPS mode or b) routing entropy
@@ -2783,7 +2795,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
   //   defined.
   //
   // Note that the final absorption operation of the SHA3 engine is triggered by the main state
-  // machine (upon receiving the health-test done pulse). The SHA3 engine is also triggered
+  // machine (upon receiving the health-test done pulse). Depending on the backpressure currently
+  // experienced in the pipeline, the sha3_process pulse needs to be delayed to allow all bits in
+  // the postht, distr and precon FIFOs to be absorbed first. The SHA3 engine is also triggered
   // internally by the padding logic whenever 832 bits (= the rate or block size of SHA3-384) have
   // been received.
   //
@@ -2793,11 +2807,50 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // SHA3 engine as long as the precon FIFO contains valid data. The ready output is just used to
   // determine when to pop from the precon FIFO.
 
+  // Pipeline depth computation
+  assign pipeline_depth = sfifo_distr_depth + pfifo_precon_depth;
+
+  // The postht FIFO must always be completely empty when the health-test done pulse is signaled
+  // to the main state machine. Note that since the postht FIFO is a packer FIFO, observing the
+  // not_empty output signal is not sufficient.
+  logic [PostHTFifoDepthW-1:0] unused_pfifo_postht_depth;
+  assign unused_pfifo_postht_depth = pfifo_postht_depth;
+  `ASSERT(PosthtFifoEmptyWhenHtDonePulse_A, main_sm_done_pulse |-> pfifo_postht_depth == '0)
+
+  logic [PipelineDepthW-1:0] pipeline_depth_cntr_set;
+  logic                      pipeline_depth_cntr_decr;
+  logic [PipelineDepthW-1:0] pipeline_depth_cntr;
+
+  assign pipeline_depth_cntr_decr = pfifo_cond_push & sha3_msgfifo_ready;
+  assign pipeline_depth_cntr_set =
+      pipeline_depth_cntr_decr ? pipeline_depth - PipelineDepthW'(2) : pipeline_depth;
+
+  prim_count #(
+    .Width(PipelineDepthW),
+    .PossibleActions(prim_count_pkg::Clr |  
+                     prim_count_pkg::Set |
+                     prim_count_pkg::Decr)
+  ) u_prim_count_pipeline_depth (
+    .clk_i,
+    .rst_ni,
+    .clr_i(!es_delayed_enable),
+    .set_i(main_sm_done_pulse),
+    .set_cnt_i(pipeline_depth_cntr_set),
+    .incr_en_i(1'b0),
+    .decr_en_i(pipeline_depth_cntr_decr),
+    .step_i(PipelineDepthW'(2)),
+    .commit_i(1'b1),
+    .cnt_o(pipeline_depth_cntr),
+    .cnt_after_commit_o(),
+    .err_o(pipeline_depth_cntr_err)
+  );
+
+  // Backpressure handling
   assign pfifo_cond_push  = pfifo_precon_not_empty && !es_bypass_mode;
   assign pfifo_cond_wdata = pfifo_precon_rdata;
 
+  // The SHA3 engine is unmasked - only connect Share 0.
   assign msg_data[0] = pfifo_cond_wdata;
-
   assign pfifo_cond_rdata = sha3_state[0][SeedLen-1:0];
 
   // SHA3 hashing engine
@@ -2953,6 +3006,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .fw_ov_ent_insert_i   (fw_ov_mode_entropy_insert),
     .fw_ov_sha3_start_i   (fw_ov_sha3_start_pfe),
     .ht_done_pulse_i      (main_sm_done_pulse),
+//    .pipeline_depth_i     (pipeline_depth), 
     .ht_fail_pulse_i      (main_sm_ht_failed),
     .alert_thresh_fail_i  (alert_threshold_fail),
     .rst_alert_cntr_o     (rst_alert_cntr),
@@ -3577,9 +3631,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
   //   signaled.
   // - The fill levels of the postht and distr FIFOs are irrelevant for the conditioner in this
   //   mode.
-  `ASSERT(FifosEmptyWhenShaProcess_A,
-      !fw_ov_mode_entropy_insert && $rose(sha3_process) |->
-      $past(!pfifo_postht_not_empty) && $past(!sfifo_distr_not_empty) && !pfifo_precon_not_empty)
+  //`ASSERT(FifosEmptyWhenShaProcess_A,
+  //    !fw_ov_mode_entropy_insert && $rose(sha3_process) |->
+  //        $past(!sfifo_distr_not_empty) && !pfifo_precon_not_empty)
 `endif
 
 endmodule

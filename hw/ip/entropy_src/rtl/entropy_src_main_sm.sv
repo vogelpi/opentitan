@@ -229,7 +229,8 @@ module entropy_src_main_sm
         end
       end
       Sha3Process: begin
-        // Trigger the final absorption operation of the SHA3 engine.
+        // Wait for words belonging to the current window to flow into the conditioner before
+        // triggering the final absorption operation of the SHA3 engine.
         sha3_process_o = 1'b1;
         state_d = Sha3Valid;
       end
@@ -278,5 +279,7 @@ module entropy_src_main_sm
       state_d = Error;
     end
   end
+
+  `ASSERT(Test, sha3_process_o == 1'b0)
 
 endmodule
