@@ -24,6 +24,8 @@
 module otbn_vec_transposer
   import otbn_pkg::*;
 (
+  input  logic             clk_i,
+  input  logic             rst_ni,
   input  logic[VLEN-1:0]   operand_a_i,
   input  logic[VLEN-1:0]   operand_b_i,
   input  logic             is_trn1_i,
@@ -89,8 +91,8 @@ module otbn_vec_transposer
     .Width(VLEN),
     .Inputs(NELEN)
   ) u_vec_transposer_elen_trn1_mux (
-    .clk_i (),
-    .rst_ni(),
+    .clk_i,
+    .rst_ni,
     .in_i  (res_trn1_all),
     .sel_i (elen_onehot_i),
     .out_o (res_trn1)
@@ -100,8 +102,8 @@ module otbn_vec_transposer
     .Width(VLEN),
     .Inputs(NELEN)
   ) u_vec_transposer_elen_trn2_mux (
-    .clk_i (),
-    .rst_ni(),
+    .clk_i,
+    .rst_ni,
     .in_i  (res_trn2_all),
     .sel_i (elen_onehot_i),
     .out_o (res_trn2)

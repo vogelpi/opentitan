@@ -167,6 +167,7 @@ for file in "$LR_SYNTH_SRC_DIR"/rtl/*.sv; do
     # support this.
     sed -i '/\.StateEnumT(logic \[.*/d' $LR_SYNTH_OUT_DIR/generated/${module}.v
     sed -i '/\.StateEnumT_otbn_pkg.*Width.*(.*/d' $LR_SYNTH_OUT_DIR/generated/${module}.v
+    sed -i '/\.StateEnumT_StateMacWidth(.*/d' $LR_SYNTH_OUT_DIR/generated/${module}.v
 done
 
 #-------------------------------------------------------------------------

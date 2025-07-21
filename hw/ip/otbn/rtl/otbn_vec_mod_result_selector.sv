@@ -64,6 +64,8 @@
 module otbn_vec_mod_result_selector
   import otbn_pkg::*;
 (
+  input  logic                clk_i,
+  input  logic                rst_ni,
   input  logic [VLEN-1:0]     result_x_i,
   input  logic [NVecProc-1:0] carries_x_i,
   input  logic [VLEN-1:0]     result_y_i,
@@ -120,8 +122,8 @@ module otbn_vec_mod_result_selector
     .Width(NVecProc),
     .Inputs(NELEN)
   ) u_vec_mod_sel_elen_mux (
-    .clk_i (),
-    .rst_ni(),
+    .clk_i,
+    .rst_ni,
     .in_i  (res_sel_all),
     .sel_i (elen_onehot_i),
     .out_o (res_sel)

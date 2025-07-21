@@ -1420,6 +1420,8 @@ module otbn
     u_otbn_core.u_otbn_controller.u_state_regs, alert_tx_o[AlertFatal])
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(OtbnScrambleCtrlFsmCheck_A,
     u_otbn_scramble_ctrl.u_state_regs, alert_tx_o[AlertFatal])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(OtbnMacBignumFsmCheck_A,
+    u_otbn_core.u_otbn_mac_bignum.u_mac_state_regs, alert_tx_o[AlertFatal])
 
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(OtbnCallStackWrPtrAlertCheck_A,
     u_otbn_core.u_otbn_rf_base.u_call_stack.u_stack_wr_ptr, alert_tx_o[AlertFatal])
