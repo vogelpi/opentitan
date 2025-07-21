@@ -1013,10 +1013,11 @@ module otbn_decoder
             alu_op_b_mux_sel_bignum = OpBSelRegister;
 
             unique case ({alu_is_subtraction_bignum_vec, alu_is_modulo_bignum_vec})
-              2'b00: alu_operator_bignum = AluOpBignumAddv;
-              2'b01: alu_operator_bignum = AluOpBignumAddvm;
-              2'b10: alu_operator_bignum = AluOpBignumSubv;
-              2'b11: alu_operator_bignum = AluOpBignumSubvm;
+              2'b00:   alu_operator_bignum = AluOpBignumAddv;
+              2'b01:   alu_operator_bignum = AluOpBignumAddvm;
+              2'b10:   alu_operator_bignum = AluOpBignumSubv;
+              2'b11:   alu_operator_bignum = AluOpBignumSubvm;
+              default: alu_operator_bignum = AluOpBignumAddv;
             endcase
           end
           3'b101: begin

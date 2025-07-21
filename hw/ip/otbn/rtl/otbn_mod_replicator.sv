@@ -9,6 +9,8 @@
 module otbn_mod_replicator
   import otbn_pkg::*;
 (
+  input  logic             clk_i,
+  input  logic             rst_ni,
   input  logic [WLEN-1:0]  mod_i,
   input  logic [NELEN-1:0] elen_onehot_i,
   output logic [WLEN-1:0]  mod_replicated_o
@@ -28,8 +30,8 @@ module otbn_mod_replicator
     .Width(WLEN),
     .Inputs(NELEN)
   ) u_vec_mod_sel_elen_mux (
-    .clk_i (),
-    .rst_ni(),
+    .clk_i,
+    .rst_ni,
     .in_i  (mod_rep),
     .sel_i (elen_onehot_i),
     .out_o (mod_replicated_o)

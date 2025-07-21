@@ -329,10 +329,11 @@ package otbn_pkg;
   function automatic elen_bignum_e parse_raw_elen(logic [1:0] elen_raw);
     elen_bignum_e elen;
     unique case (elen_raw)
-      2'b00: elen = VecElen16;
-      2'b01: elen = VecElen32;
-      2'b10: elen = VecElen64;
-      2'b11: elen = VecElen128;
+      2'b00:   elen = VecElen16;
+      2'b01:   elen = VecElen32;
+      2'b10:   elen = VecElen64;
+      2'b11:   elen = VecElen128;
+      default: elen = VecElen64;
     endcase
     return elen;
   endfunction

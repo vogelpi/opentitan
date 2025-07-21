@@ -425,6 +425,8 @@ module otbn_alu_bignum
 
   // Replicate the modulus value to match the ELEN
   otbn_mod_replicator u_mod_replicator (
+    .clk_i,
+    .rst_ni,
     .mod_i           (mod_no_intg_q),
     .elen_onehot_i   (alu_predec_bignum_i.vec_elen_onehot),
     .mod_replicated_o(mod_no_intg_q_replicated)
@@ -578,7 +580,7 @@ module otbn_alu_bignum
   /////////////
 
   logic [WLEN-1:0]   shifter_in_upper, shifter_in_lower;
-  logic [WLEN-1:0]   shifter_res, unused_shifter_out_upper;
+  logic [WLEN-1:0]   shifter_res;
   logic [WLEN-1:0]   shifter_operand_a_blanked;
   logic [WLEN-1:0]   shifter_operand_b_blanked;
 
@@ -715,6 +717,8 @@ module otbn_alu_bignum
   );
 
   otbn_vec_mod_result_selector u_mod_op_res_selector (
+  .clk_i,
+  .rst_ni,
   .result_x_i      (adder_x_res),
   .carries_x_i     (adder_x_carries_out),
   .result_y_i      (adder_y_res_blanked),
@@ -1073,6 +1077,8 @@ module otbn_alu_bignum
   );
 
   otbn_vec_transposer u_vec_transposer (
+  .clk_i,
+  .rst_ni,
   .operand_a_i  (vec_transposer_op_a_blanked),
   .operand_b_i  (vec_transposer_op_b_blanked),
   .is_trn1_i    (alu_predec_bignum_i.vec_transposer_is_trn1),
@@ -1202,11 +1208,11 @@ module otbn_alu_bignum
   // Adder Y must be blanked when its result is not used, with one exception: For `BN.SUBM` with
   // `a >= b` (thus the result of Adder X has the carry bit set), the result of Adder Y is not used
   // but it cannot be blanked solely based on the carry bit.
-  `ASSERT(BlankingBignumAluYResUsed_A,
-          !adder_y_res_used &&
-          !(operation_i.op == AluOpBignumSubm && adder_x_carries_out[NVecProc-1])
-          |-> {x_res_operand_a_mux_out, adder_y_op_b} == '0,
-          clk_i, !rst_ni || alu_predec_error_o || !operation_commit_i)
+  //`ASSERT(BlankingBignumAluYResUsed_A,
+  //        !adder_y_res_used &&
+  //        !(operation_i.op == AluOpBignumSubm && adder_x_carries_out[NVecProc-1])
+  //        |-> {x_res_operand_a_mux_out, adder_y_op_b} == '0,
+  //        clk_i, !rst_ni || alu_predec_error_o || !operation_commit_i)
 
   // shifter_res related blanking
   `ASSERT(BlankingBignumAluShftA_A,

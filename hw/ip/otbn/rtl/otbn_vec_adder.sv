@@ -97,4 +97,8 @@ module otbn_vec_adder
     assign unused_adder_res_lsb = result[0];
   end
 
+  // The most significant carry bit is unused.
+  logic unused_adders_carry_out;
+  assign unused_adders_carry_out = adders_carry_out[LNVecProc-1];
+
 endmodule
