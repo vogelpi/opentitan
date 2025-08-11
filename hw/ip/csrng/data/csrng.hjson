@@ -503,7 +503,6 @@
       desc: "Internal state read enable register",
       swaccess: "rw",
       hwaccess: "hro",
-      regwen: "INT_STATE_READ_ENABLE_REGWEN",
       fields: [
         { bits: "2:0",
           name: "INT_STATE_READ_ENABLE",

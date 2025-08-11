@@ -976,10 +976,6 @@ module csrng_reg_top (
 
 
   // R[int_state_read_enable]: V(False)
-  // Create REGWEN-gated WE signal
-  logic int_state_read_enable_gated_we;
-  assign int_state_read_enable_gated_we =
-    int_state_read_enable_we & int_state_read_enable_regwen_qs;
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -990,7 +986,7 @@ module csrng_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (int_state_read_enable_gated_we),
+    .we     (int_state_read_enable_we),
     .wd     (int_state_read_enable_wd),
 
     // from internal hardware
@@ -2343,7 +2339,7 @@ module csrng_reg_top (
     reg_we_check[11] = 1'b0;
     reg_we_check[12] = 1'b0;
     reg_we_check[13] = 1'b0;
-    reg_we_check[14] = int_state_read_enable_gated_we;
+    reg_we_check[14] = int_state_read_enable_we;
     reg_we_check[15] = int_state_read_enable_regwen_we;
     reg_we_check[16] = int_state_num_we;
     reg_we_check[17] = 1'b0;
