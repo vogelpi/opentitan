@@ -5,7 +5,6 @@
 NONHERMETIC_ENV_VARS = [
     "XILINX_VIVADO",
     "XILINXD_LICENSE_FILE",
-    "LD_PRELOAD",
 ]
 
 # Binarys that Bazel rule may depend on from the PATH.
