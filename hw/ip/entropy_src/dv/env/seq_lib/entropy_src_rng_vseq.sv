@@ -146,8 +146,11 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
 
     completed = 0;
 
-    fips_window_size   = newcfg.fips_window_size;
+    // The threshold_rec() function below always expects the health test window size in bits. The
+    // bypass window is specified in bits. In contrast, the FIPS window is specified in symbols and
+    // the `rng_bit_enable` setting effectively manipulates the symbol size.
     bypass_window_size = newcfg.bypass_window_size;
+    fips_window_size   = newcfg.fips_window_size * (newcfg.rng_bit_enable ? 1 : `RNG_BUS_WIDTH);
 
     if (!newcfg.default_ht_thresholds) begin
       // AdaptP thresholds

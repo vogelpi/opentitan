@@ -337,6 +337,14 @@ package entropy_src_env_pkg;
         `dv_fatal("Invalid test!", "entropy_src_env_pkg::ideal_threshold_recommendation")
       end
     endcase
+
+    // The RNG sequence is assumed to be uniformly distributed at random. According to the central
+    // limit theorem (CLT), the distributions of the inidividual health tests converge to normal or
+    // rather binomial distributions (as we're dealing with discrete variables) under appropriate
+    // conditions (such as the health test window being sufficiently large).
+    //
+    // For binomial distributions, the mean and standard deviation can be approximated as follows
+    // (see https://en.wikipedia.org/wiki/Binomial_distribution#Normal_approximation):
     mean   = p * n;
     stddev = $sqrt(p * (1 - p) * n);
 
