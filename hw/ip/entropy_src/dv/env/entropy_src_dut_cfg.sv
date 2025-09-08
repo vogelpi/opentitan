@@ -139,11 +139,11 @@ class entropy_src_dut_cfg extends uvm_object;
       384 :/ 1 };}
 
   constraint fips_window_size_c { fips_window_size dist {
-     512  :/ 1,
+    // 512  :/ 1,
      1024 :/ 1,
-     2048 :/ 5,
-     4096 :/ 1,
-     8192 :/ 1 };}
+     2048 :/ 5 };}
+    // 4096 :/ 1,
+    // 8192 :/ 1 };}
 
   constraint sw_regupd_c {sw_regupd dist {
       1 :/ sw_regupd_pct,

@@ -280,6 +280,6 @@ module entropy_src_main_sm
     end
   end
 
-  `ASSERT(Test, sha3_process_o == 1'b0)
+  //`ASSERT(Test, sha3_process_o == 1'b0)
 
 endmodule

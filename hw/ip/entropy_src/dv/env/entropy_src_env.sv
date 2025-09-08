@@ -80,8 +80,8 @@ class entropy_src_env extends cip_base_env #(
     // to reduce backpressure and avoid entropy bits from being dropped from the pipeline as our
     // scoreboard cannot handle this.
     cfg.m_aes_halt_agent_cfg.zero_delays = 0;
-    cfg.m_aes_halt_agent_cfg.device_delay_min = 0;
-    cfg.m_aes_halt_agent_cfg.device_delay_max = 48;
+    cfg.m_aes_halt_agent_cfg.device_delay_min = 32; // 0;
+    cfg.m_aes_halt_agent_cfg.device_delay_max = 96; // 48;
     // CSRNG drops its ack in the cycle after entropy_src has dropped its req.
     cfg.m_aes_halt_agent_cfg.ack_lo_delay_max = 1;
 

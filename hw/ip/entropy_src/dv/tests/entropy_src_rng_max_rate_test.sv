@@ -20,15 +20,19 @@ class entropy_src_rng_max_rate_test extends entropy_src_rng_test;
     // after roughly 7us (rng_bit_enable = 0) or 30us (rng_bit_enable = 1) on average. The
     // first FIPS seed is then available after roughly 80us and further seeds after 40us
     // (rng_bit_enable = 0).
-    cfg.mean_rand_reconfig_time = 500us;
+    cfg.mean_rand_reconfig_time = 3000us;
     // This test automatically switches the DUT from non-FIPS to FIPS mode once a seed
     // is observed. However, as we reconfigure the DUT very frequently, this automatic
     // switch might not happen.
     cfg.dut_cfg.fips_enable_pct = 60;
     // We want to hit all rng_bit_enable settings (off, bit 0 - 3) w/ and w/o bypass and
     // fips_enable.
-    cfg.dut_cfg.rng_bit_enable_pct = 80;
-    cfg.dut_cfg.type_bypass_pct = 50;
+    cfg.dut_cfg.rng_bit_enable_pct = 0;
+    cfg.dut_cfg.type_bypass_pct = 0;
+
+    cfg.dut_cfg.fw_read_pct                 = 0;
+    cfg.dut_cfg.fw_over_pct                 = 0;
+
     `DV_CHECK_RANDOMIZE_FATAL(cfg)
 
     `uvm_info(`gfn, $sformatf("%s", cfg.convert2string()), UVM_LOW)

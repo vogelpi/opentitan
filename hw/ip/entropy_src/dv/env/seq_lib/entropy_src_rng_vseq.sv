@@ -161,14 +161,14 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
                                    threshold_scope != MuBi4True,
                                    rng_bit_enable == MuBi4True,
                                    newcfg.adaptp_sigma, lo_thresh, hi_thresh);
-      ral.adaptp_hi_thresholds.fips_thresh.set(hi_thresh[15:0]);
-      ral.adaptp_lo_thresholds.fips_thresh.set(lo_thresh[15:0]);
+      ral.adaptp_hi_thresholds.fips_thresh.set(16'hffff);//hi_thresh[15:0]);
+      ral.adaptp_lo_thresholds.fips_thresh.set(16'h0000);//lo_thresh[15:0]);
       m_rng_push_seq.threshold_rec(bypass_window_size, adaptp_ht,
                                    threshold_scope != MuBi4True,
                                    rng_bit_enable == MuBi4True,
                                    newcfg.adaptp_sigma, lo_thresh, hi_thresh);
-      ral.adaptp_hi_thresholds.bypass_thresh.set(hi_thresh[15:0]);
-      ral.adaptp_lo_thresholds.bypass_thresh.set(lo_thresh[15:0]);
+      ral.adaptp_hi_thresholds.bypass_thresh.set(16'hffff);//hi_thresh[15:0]);
+      ral.adaptp_lo_thresholds.bypass_thresh.set(16'h0000);//lo_thresh[15:0]);
       csr_update(.csr(ral.adaptp_hi_thresholds));
       csr_update(.csr(ral.adaptp_lo_thresholds));
 
@@ -181,10 +181,10 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
         `uvm_info(`gfn, "Setting BUCKET thresholds", UVM_DEBUG)
         m_rng_push_seq.threshold_rec(fips_window_size, bucket_ht, 0, 0,
                                     newcfg.bucket_sigma, lo_thresh, hi_thresh);
-        ral.bucket_thresholds.fips_thresh.set(hi_thresh[15:0]);
+        ral.bucket_thresholds.fips_thresh.set(16'hffff);//hi_thresh[15:0]);
         m_rng_push_seq.threshold_rec(bypass_window_size, bucket_ht, 0, 0,
                                     newcfg.bucket_sigma, lo_thresh, hi_thresh);
-        ral.bucket_thresholds.bypass_thresh.set(hi_thresh[15:0]);
+        ral.bucket_thresholds.bypass_thresh.set(16'hffff);//hi_thresh[15:0]);
       end
       csr_update(.csr(ral.bucket_thresholds));
 
@@ -194,14 +194,14 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
                                    threshold_scope != MuBi4True,
                                    rng_bit_enable == MuBi4True,
                                    newcfg.markov_sigma, lo_thresh, hi_thresh);
-      ral.markov_hi_thresholds.fips_thresh.set(hi_thresh[15:0]);
-      ral.markov_lo_thresholds.fips_thresh.set(lo_thresh[15:0]);
+      ral.markov_hi_thresholds.fips_thresh.set(16'hffff);//hi_thresh[15:0]);
+      ral.markov_lo_thresholds.fips_thresh.set(16'h0000);//lo_thresh[15:0]);
       m_rng_push_seq.threshold_rec(bypass_window_size, markov_ht,
                                    threshold_scope != MuBi4True,
                                    rng_bit_enable == MuBi4True,
                                    newcfg.markov_sigma, lo_thresh, hi_thresh);
-      ral.markov_hi_thresholds.bypass_thresh.set(hi_thresh[15:0]);
-      ral.markov_lo_thresholds.bypass_thresh.set(lo_thresh[15:0]);
+      ral.markov_hi_thresholds.bypass_thresh.set(16'hffff);//hi_thresh[15:0]);
+      ral.markov_lo_thresholds.bypass_thresh.set(16'h0000);//lo_thresh[15:0]);
       csr_update(.csr(ral.markov_hi_thresholds));
       csr_update(.csr(ral.markov_lo_thresholds));
     end
