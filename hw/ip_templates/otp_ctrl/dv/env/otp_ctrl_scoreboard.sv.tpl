@@ -1436,7 +1436,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
       int partition_bit_idx = partition_idx % 32;
       exp_partition_status[partition_reg_idx][partition_bit_idx] = 0;
       foreach (exp_partition_status[i]) begin
-        any_partition_error |= exp_partition_status[i];
+        any_partition_error |= |exp_partition_status[i];
       end
       if(!any_partition_error) begin
         exp_status[OtpPartitionErrorIdx] = 0;
