@@ -18,6 +18,7 @@ srcs = [
     "//sw/otbn/crypto/mldsa87/sign:mldsa87_sign_sample.s",
     "//sw/otbn/crypto/mldsa87/sign:mldsa87_sign_expand.s",
     "//sw/otbn/crypto/mldsa87/sign:mldsa87_sign_encoding.s",
+    "//sw/otbn/crypto/mldsa87/sign:mldsa87_sign_ops.s",
 ]
 
 unit_tests = [
@@ -26,6 +27,7 @@ unit_tests = [
     "mldsa87_sign_decode_t0_test",
     "mldsa87_sign_decode_w1_test",
     "mldsa87_sign_encode_z_test",
+    "mldsa87_sign_compute_w_test",
 ]
 
 [

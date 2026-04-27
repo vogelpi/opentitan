@@ -21,5 +21,6 @@ otbn_binary(
         "mldsa87_sign_sample.s",
         "mldsa87_sign_expand.s",
         "mldsa87_sign_encoding.s",
+        "mldsa87_sign_ops.s",
     ],
 )
