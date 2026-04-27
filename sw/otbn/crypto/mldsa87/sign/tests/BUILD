@@ -28,6 +28,7 @@ unit_tests = [
     "mldsa87_sign_decode_w1_test",
     "mldsa87_sign_encode_z_test",
     "mldsa87_sign_compute_w_test",
+    "mldsa87_sign_decompose_w_test",
 ]
 
 [

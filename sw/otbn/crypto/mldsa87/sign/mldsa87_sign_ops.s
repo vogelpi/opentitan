@@ -5,6 +5,7 @@
 /* High-level operations for ML-DSA-87 sign. */
 
 .globl compute_w
+.globl decompose_w
 
 .text
 
@@ -137,6 +138,58 @@ compute_w:
 
     addi x10, x10, 1024
     addi x11, x11, 1024
+    /* End of loop */
+
+  ret
+
+/**
+ * Decomposition of the commitment vector W.
+ *
+ * Decompose the shared commitment vector W = A * Y into lower-bit polynomials
+ * W0 and higher-bit polynomials W1 according to the `Decompose` function
+ * (Algorithm 36) of FIPS-204. See `sec_decompose` for the mathematical
+ * rationale behind this operation.
+ *
+ * This routine overwrites the DMEM location of W with the W0 polynomials and
+ * encodes the W1 polynomials to a dense representation (see `encode_w1`).
+ *
+ * @param[in] x2: DMEM address of the first share of W and the first share of
+ *                the resulting W0 (both 8 * 1024 bytes).
+ * @param[in] x3: DMEM address of the second share of W and the second share of
+ *                the resulting W0 (both 8 * 1024 bytes).
+ * @param[in] x4: DMEM address of the encoded W1 vector (8 * 128 bytes).
+ * @param[in] x5: DMEM address of a polynomial slot (1024 bytes).
+ */
+decompose_w:
+  /* Save DMEM address pointers. */
+  addi x6, x2, 0 /* W (share 0) */
+  addi x7, x3, 0 /* W (share 1) */
+  addi x8, x4, 0 /* W1 */
+  addi x9, x5, 0 /* Slot */
+
+  /*
+   * Iterate over each shared polynomial W[i] and decompose it into a shared
+   * polynomial whose coefficients contain the lower bits W0[i] and an unshared
+   * polynomial for the high-bit coefficients W1[i]. To save DMEM space, W1[i]
+   * is immediately encoded into a dense representation.
+   */
+  loopi 8, 10
+    /* Compute the decomposition of W[i]. Overwrite the two shares of W[i] with
+       the shares of W0[i] and place W1[i] in the slot. */
+    addi x2, x6, 0
+    addi x3, x7, 0
+    addi x4, x9, 0
+    jal x1, sec_decompose
+
+    /* Encode W1[i] in the slot and write it to the output location. */
+    addi x2, x9, 0
+    addi x3, x8, 0
+    jal x1, encode_w1
+
+    /* Advance address pointers. */
+    addi x6, x6, 1024
+    addi x7, x7, 1024
+    addi x8, x8, 128
     /* End of loop */
 
   ret
