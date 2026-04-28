@@ -8,6 +8,7 @@
 .globl sec_b2a_8x32
 .globl sec_add_8x32
 .globl sec_unmask_8x32
+.globl sec_unmask
 
 /*
 
@@ -341,6 +342,50 @@ sec_decompose:
 
     bn.sid x5, 0(x2++)
     bn.sid x0, 0(x4++)
+    /* End of loop */
+
+  /* Restore clobbered general-purpose registers. */
+  .irp reg, x6, x5, x4, x3, x2
+    addi x31, x31, -4
+    lw \reg, 0(x31)
+  .endr
+
+  ret
+
+/**
+ * Securely unmask an arithmetically shared polynomial.
+ *
+ * This routine is a polynomial wrapper around `sec_unmask_8x32` which in turn
+ * implements the `SecUnMask` function (Algorithm 3 in [1]).
+ *
+ * @param[in]  x2: DMEM address of the first arithmetic polynomial share.
+ * @param[in]  x3: DMEM address of the second arithmetic polynomial share.
+ * @param[out] x4: DMEM address of the resulting unmasked polynomial.
+ */
+sec_unmask:
+ /* Push clobbered registers onto the stack. */
+  .irp reg, x2, x3, x4, x5, x6
+    sw \reg, 0(x31)
+    addi x31, x31, 4
+  .endr
+
+  /* WDR pointers. */
+  addi x5, x0, 0
+  addi x6, x0, 1
+
+  /* Iterate over the shared polynomial in steps of eight coefficients. */
+  loopi 32, 6
+    /* Load 8 arithmetically shared coefficients into w0 and w1. */
+    bn.lid x5, 0(x2++)
+    bn.xor w31, w31, w31 /* dummy */
+    bn.lid x6, 0(x3++)
+
+    /* Convert the coefficients to Boolean shares before unmasking them. */
+    jal x1, sec_a2b_8x32
+    jal x1, sec_unmask_8x32
+
+    /* Store unmasked coefficients into the output location. */
+    bn.sid x5, 0(x4++)
     /* End of loop */
 
   /* Restore clobbered general-purpose registers. */
