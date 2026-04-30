@@ -7,6 +7,8 @@
 .globl xof_shake128_init
 .globl xof_shake256_init
 .globl xof_absorb
+.globl xof_process
+.globl xof_squeeze24
 .globl xof_squeeze32
 .globl xof_finish
 
