@@ -2866,7 +2866,7 @@ module top_earlgrey #(
     .RndCnstScrNonce(RndCnstRomCtrlScrNonce),
     .RndCnstScrKey(RndCnstRomCtrlScrKey),
     .SecDisableScrambling(SecRomCtrlDisableScrambling),
-    .MemSizeRom(32768)
+    .MemSizeRom(131072)
   ) u_rom_ctrl (
 
     // alert_handler[60]: fatal
