@@ -77,7 +77,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   localparam int PipelineDepthW =
       prim_util_pkg::vbits(1 + DistrFifoDepth + PreCondWidth / PostHTWidth + 1);
   localparam int Clog2ObserveFifoDepth = $clog2(ObserveFifoDepth);
-  localparam int EsEnableCopies = 20;
+  localparam int EsEnableCopies = 19;
   localparam int EsEnPulseCopies = 1;
   localparam int unsigned NumSwReadsSeed = SeedLen / FullRegWidth;
   localparam int unsigned LastSwRead = NumSwReadsSeed - 1;
@@ -209,6 +209,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                     es_route_to_sw;
   logic                     es_bypass_to_sw;
   logic                     es_bypass_mode;
+  logic                     esfinal_fifo_clear_while_disabled_pfe;
+  logic                     esfinal_fifo_clear_while_disabled_pfa;
+  logic                     esfinal_fifo_clear_while_disabled;
   logic                     alert_cntr_clr_ok;
   logic                     threshold_scope;
   logic                     threshold_scope_pfe;
@@ -1360,6 +1363,30 @@ module entropy_src_core import entropy_src_pkg::*; #(
   );
 
   // SEC_CM: CONFIG.MUBI
+  mubi4_t mubi_esfinal_fifo_clear_while_disabled;
+  mubi4_t [1:0] mubi_esfinal_fifo_clear_while_disabled_fanout;
+  assign mubi_esfinal_fifo_clear_while_disabled =
+      mubi4_t'(reg2hw.entropy_control.esfinal_fifo_clear_while_disabled.q);
+  assign esfinal_fifo_clear_while_disabled_pfe =
+      mubi4_test_true_strict(mubi_esfinal_fifo_clear_while_disabled_fanout[0]);
+  assign esfinal_fifo_clear_while_disabled_pfa =
+      mubi4_test_invalid(mubi_esfinal_fifo_clear_while_disabled_fanout[1]);
+  assign hw2reg.recov_alert_sts.esfinal_fifo_clear_while_disabled_field_alert.de =
+      esfinal_fifo_clear_while_disabled_pfa;
+  assign hw2reg.recov_alert_sts.esfinal_fifo_clear_while_disabled_field_alert.d =
+      esfinal_fifo_clear_while_disabled_pfa;
+
+  prim_mubi4_sync #(
+    .NumCopies(2),
+    .AsyncOn(0)
+  ) u_prim_mubi4_sync_esfinal_fifo_clear_while_disabled (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(mubi_esfinal_fifo_clear_while_disabled),
+    .mubi_o(mubi_esfinal_fifo_clear_while_disabled_fanout)
+  );
+
+  // SEC_CM: CONFIG.MUBI
   mubi4_t mubi_thresh_scope;
   assign mubi_thresh_scope = mubi4_t'(reg2hw.conf.threshold_scope.q);
   assign threshold_scope_pfe = mubi4_test_true_strict(mubi_thresh_scope);
@@ -1370,6 +1397,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign es_route_to_sw = es_route_pfe;
   assign es_bypass_to_sw = es_type_pfe;
   assign threshold_scope = threshold_scope_pfe;
+  assign esfinal_fifo_clear_while_disabled = esfinal_fifo_clear_while_disabled_pfe;
 
   // The es_bypass_mode signal determines whether the conditioner is bypassed or not.
   // The conditioner can be bypassed by either disabling fips_enable_pfe or by enabling
@@ -2390,7 +2418,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign sfifo_distr_push = pfifo_postht_not_empty;
   assign sfifo_distr_wdata = pfifo_postht_rdata;
 
-  assign sfifo_distr_clr = fw_ov_mode_entropy_insert ? !es_enable_fo[19] : !es_delayed_enable;
+  assign sfifo_distr_clr = fw_ov_mode_entropy_insert ? !es_enable_fo[18] : !es_delayed_enable;
 
   // In firmware override mode with extract & insert enabled, post-health test entropy bits can
   // only move into the observe FIFO. Once the observe FIFO is full, post-health test entropy is
@@ -2886,7 +2914,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
          fw_ov_mode_entropy_insert && es_bypass_mode ? pfifo_bypass_not_empty :
          main_stage_push;
 
-  assign sfifo_esfinal_clr  = !es_enable_fo[14];
+  assign sfifo_esfinal_clr = esfinal_fifo_clear_while_disabled & !es_enable_fo[14];
   assign sfifo_esfinal_wdata = {fips_compliance,final_es_data};
   assign sfifo_esfinal_pop = es_route_to_sw ? swread_done : es_hw_if_fifo_pop;
   assign {esfinal_fips_flag,esfinal_data} = sfifo_esfinal_rdata;
@@ -2910,7 +2938,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   entropy_src_ack_sm u_entropy_src_ack_sm (
     .clk_i            (clk_i),
     .rst_ni           (rst_ni),
-    .enable_i         (es_enable_fo[15]),
     .req_i            (es_hw_if_req),
     .ack_o            (es_hw_if_ack),
     .fifo_not_empty_i (sfifo_esfinal_not_empty && !es_route_to_sw),
@@ -2934,7 +2961,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign es_rdata_capt_d = es_rdata_capt_vld ? sfifo_esfinal_rdata[63:0] : es_rdata_capt_q;
 
   assign es_rdata_capt_vld_d =
-         !es_enable_fo[16] ? 1'b0 :
+         !es_enable_fo[15] ? 1'b0 :
          es_rdata_capt_vld ? 1'b1 :
          es_rdata_capt_vld_q;
 
@@ -2948,7 +2975,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   //----------------------------------------------------
 
   // Is the ENTROPY_DATA register readable?
-  assign es_data_reg_rd_en = es_enable_fo[17] && entropy_data_reg_en_pfe;
+  assign es_data_reg_rd_en = es_enable_fo[16] && entropy_data_reg_en_pfe;
 
   // Interface the esfinal FIFO and cut its 384-bit output into 32-bit chunks for software.
   // We're done after the last read.
@@ -2962,7 +2989,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign swread_idx_clr = !es_data_reg_rd_en || swread_done;
 
   // Index counter
-  assign swread_idx_d = !es_enable_fo[18] ? '0                  :
+  assign swread_idx_d = !es_enable_fo[17] ? '0                  :
                         swread_idx_clr    ? '0                  :
                         swread_idx_incr   ? swread_idx_q + 1'b1 : swread_idx_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin : swread_idx_reg

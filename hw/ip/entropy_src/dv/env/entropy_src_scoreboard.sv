@@ -1123,12 +1123,14 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     bit               match_found;
     bit entropy_data_reg_enable;
     bit module_enabled;
+    bit esfinal_clr_while_dsbld;
     entropy_data_reg_enable = ral.conf.entropy_data_reg_enable.get_mirrored_value() == MuBi4True;
-
-    module_enabled = (ral.module_enable.module_enable.get_mirrored_value() == MuBi4True);
+    module_enabled = ral.module_enable.module_enable.get_mirrored_value() == MuBi4True;
+    esfinal_clr_while_dsbld =
+        ral.entropy_control.esfinal_fifo_clear_while_disabled.get_mirrored_value() == MuBi4True;
     match_found = 0;
 
-    if(!entropy_data_reg_enable || !module_enabled) begin
+    if(!entropy_data_reg_enable || (!module_enabled && esfinal_clr_while_dsbld)) begin
       // ignore the contents of the entropy_data fifo.
       `DV_CHECK_FATAL(csr.predict(.value({TL_DW{1'b0}}), .kind(UVM_PREDICT_READ)))
       match_found = 1;
@@ -1295,7 +1297,10 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
     if ((rst_type == FIFOClr) || (rst_type == Enable)) begin
       observe_fifo_q.delete();
-      entropy_data_q.delete();
+      if (ral.entropy_control.esfinal_fifo_clear_while_disabled.get_mirrored_value()
+          == MuBi4True) begin
+        entropy_data_q.delete();
+      end
       // The overflow condition for the observe FIFO is cleared whenever the observe FIFO
       // gets cleared.
       observe_fifo_overflow = 0;
@@ -1880,6 +1885,9 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
                                    invalid_es_route);
               check_redundancy_val("entropy_control", "es_type", "es_type_field_alert",
                                    invalid_es_type);
+              check_redundancy_val("entropy_control", "esfinal_fifo_clear_while_disabled",
+                                   "esfinal_fifo_clear_while_disabled_field_alert",
+                                   invalid_esfinal_clr_while_dsbld);
             end
             "threshold_oneway": begin
               check_redundancy_val("threshold_oneway", "threshold_oneway",

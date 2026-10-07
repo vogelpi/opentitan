@@ -183,6 +183,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     // Controls
     ral.entropy_control.es_type.set(newcfg.type_bypass);
     ral.entropy_control.es_route.set(newcfg.route_software);
+    ral.entropy_control.esfinal_fifo_clear_while_disabled.set(newcfg.esfinal_clr_while_dsbld);
     csr_update(.csr(ral.entropy_control));
     pause_until_reset_or_flag(pause, stop_early);
     if (stop_early || cfg.under_reset) return;
@@ -377,6 +378,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
 
     ral.entropy_control.es_type.set(MuBi4False);
     ral.entropy_control.es_route.set(MuBi4False);
+    ral.entropy_control.esfinal_fifo_clear_while_disabled.set(MuBi4True);
     csr_update(.csr(ral.entropy_control));
     if (cfg.under_reset) return;
 
