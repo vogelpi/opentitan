@@ -124,9 +124,9 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     if (status != UVM_IS_OK) `uvm_error("write", "Writing MuBi4False to module_enable failed")
 
     // Disabling the module will clear the error state,
-    // as well as the observe and entropy_data FIFOs
-    // Clear all interrupts here
-    ral.intr_state.write(status, 32'hf);
+    // as well as the observe FIFO
+    // Clear all but the es_entropy_valid interrupt here
+    ral.intr_state.write(status, 32'he);
     if (cfg.under_reset) return;
     if (status != UVM_IS_OK) `uvm_error("write", "Writing '1 to intr_state failed")
 

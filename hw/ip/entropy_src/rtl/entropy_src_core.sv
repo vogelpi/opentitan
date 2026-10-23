@@ -77,7 +77,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   localparam int PipelineDepthW =
       prim_util_pkg::vbits(1 + DistrFifoDepth + PreCondWidth / PostHTWidth + 1);
   localparam int Clog2ObserveFifoDepth = $clog2(ObserveFifoDepth);
-  localparam int EsEnableCopies = 16;
+  localparam int EsEnableCopies = 15;
   localparam int EsEnPulseCopies = 1;
   localparam int unsigned NumSwReadsSeed = SeedLen / FullRegWidth;
   localparam int unsigned LastSwRead = NumSwReadsSeed - 1;
@@ -863,7 +863,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   // set the interrupt event when enabled
   assign event_es_entropy_valid =
-      sfifo_esfinal_not_empty && es_route_to_sw && es_data_reg_rd_en && es_enable_fo[2];
+      sfifo_esfinal_not_empty && es_route_to_sw && es_data_reg_rd_en;
 
 
   // Collect all internal FIFO errors.
@@ -882,7 +882,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
                             sha3_state_error_sum;
 
   // set the interrupt sources
-  assign event_es_fatal_err = (es_enable_fo[3] &&
+  assign event_es_fatal_err = (es_enable_fo[2] &&
                                  (sfifo_esrng_err_sum   ||
                                   sfifo_distr_err_sum   ||
                                   sfifo_observe_err_sum ||
@@ -1009,7 +1009,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign hw2reg.debug_status.sha3_err.d = sha3_err_q;
 
   assign sha3_err_d =
-         es_enable_fo[4] ? 1'b0 :
+         es_enable_fo[3] ? 1'b0 :
          {|sha3_err} ? 1'b1 :
          sha3_err_q;
 
@@ -1055,7 +1055,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // fifo controls
   // We can't handle any backpressure at this point. Unless the ENTROPY_SRC block is turned off,
   // the input coming from the noise source / RNG needs to be accepted without dropping samples.
-  assign sfifo_esrng_push = es_enable_fo[5] && es_delayed_enable && entropy_src_rng_valid_i &&
+  assign sfifo_esrng_push = es_enable_fo[4] && es_delayed_enable && entropy_src_rng_valid_i &&
                             rng_enable_q;
 
   assign sfifo_esrng_clr   = ~es_delayed_enable;
@@ -2012,7 +2012,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
          // Eventually clear when disabling. Note, it may be possible that the last symbol tested
          // before disabling triggers a failure. We want to record this failure. Thus, the clearing
          // has the lowest priority and the delayed enable signal is used as well.
-         !(es_enable_fo[6] || es_delayed_enable) ? 1'b0 :
+         !(es_enable_fo[5] || es_delayed_enable) ? 1'b0 :
          ht_failed_q;
 
 
@@ -2378,7 +2378,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // Also, there is no association between SHA data and health test windows in FW_OV mode, so there
   // is no benefit in this mode to clearing the SHA FIFOs at the same time we clear the HT
   // statistics.
-  assign pfifo_postht_clr = fw_ov_mode_entropy_insert ? !es_enable_fo[7] : !es_delayed_enable;
+  assign pfifo_postht_clr = fw_ov_mode_entropy_insert ? !es_enable_fo[6] : !es_delayed_enable;
 
   // Pop whenever the distribution FIFO is not full. The distribution FIFO can be sized such that
   // it's never going to be full even under pessimistic operating conditions.
@@ -2421,7 +2421,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign sfifo_distr_push = pfifo_postht_not_empty;
   assign sfifo_distr_wdata = pfifo_postht_rdata;
 
-  assign sfifo_distr_clr = fw_ov_mode_entropy_insert ? !es_enable_fo[15] : !es_delayed_enable;
+  assign sfifo_distr_clr = fw_ov_mode_entropy_insert ? !es_enable_fo[7] : !es_delayed_enable;
 
   // In firmware override mode with extract & insert enabled, post-health test entropy bits can
   // only move into the observe FIFO. Once the observe FIFO is full, post-health test entropy is
@@ -3072,7 +3072,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   // Count number of valid bits from RNG input (RngBusWidth wide) while Entropy Source is enabled.
   logic [63:0] rng_valid_bit_cnt_d, rng_valid_bit_cnt_q;
-  assign rng_valid_bit_cnt_d = entropy_src_rng_valid_i && es_enable_fo[5] &&
+  assign rng_valid_bit_cnt_d = entropy_src_rng_valid_i && es_enable_fo[4] &&
                                es_delayed_enable_q ?
                                rng_valid_bit_cnt_q + RngBusWidth :
                                rng_valid_bit_cnt_q;
