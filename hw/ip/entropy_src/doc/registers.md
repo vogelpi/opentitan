@@ -286,7 +286,9 @@ If needed, firmware can manually clear the esfinal FIFO while ENTROPY_SRC is dis
 ### ENTROPY_CONTROL . BYPASS_CONDITIONING
 When this field is `kMultiBitBool4False`, the hardware conditioning inside the ENTROPY_SRC block is enabled when running in FIPS/CC compliance mode.
 Setting this field to `kMultiBitBool4True` will bypass the hardware conditioning.
-In this case, no entropy is being passed to the block hardware interface, but firmware can request the reading of unconditioned, raw entropy from the [`ENTROPY_DATA`](#entropy_data) register via the [`ENTROPY_DATA_REQUEST`](#entropy_data_request) register.
+In this case, no entropy is being passed to the block hardware interface.
+Instead, if [`ENTROPY_CONTROL.ENTROPY_DATA_REG_ENABLE`](#entropy_control) is `kMultiBitBool4True`, a single seed's worth of unconditioned, raw entropy is routed to the [`ENTROPY_DATA`](#entropy_data) register without firmware having to request it via [`ENTROPY_DATA_REQUEST.`](#entropy_data_request)
+Firmware reads the seed once [`ENTROPY_DATA_VALID`](#entropy_data_valid) is `kMultiBitBool4True`.
 
 Alternatively, the hardware conditioning can be bypassed by setting [`CONF.FIPS_ENABLE`](#conf) to `kMultiBitBool4False`.
 This enables the bypass / boot-time mode in which the ENTROPY_SRC block will pass a single seed's worth of entropy to the block hardware interface only.
@@ -313,10 +315,12 @@ Entropy data request register
 
 ### ENTROPY_DATA_REQUEST . ENTROPY_DATA_REQUEST
 Firmware can write `kMultiBitBool4True` to this field to request the routing of the next 384-bit seed from the esfinal FIFO to the [`ENTROPY_DATA`](#entropy_data) register.
-For this to work, [`ENTROPY_CONTROL.ENTROPY_DATA_REG_ENABLE`](#entropy_control) needs to be set to `kMultiBitBool4True`.
-Otherwise, this field keeps reading as `kMultiBitBool4False` and the request is ignored.
+For this to work, [`ENTROPY_CONTROL.ENTROPY_DATA_REG_ENABLE`](#entropy_control) needs to be set to `kMultiBitBool4True` and the previous seed needs to have been read entirely from the [`ENTROPY_DATA`](#entropy_data) register.
+Otherwise, or if the esfinal FIFO is empty, the request is ignored.
+If [`ENTROPY_CONTROL.BYPASS_CONDITIONING`](#entropy_control) is `kMultiBitBool4True`, the seed is routed to the [`ENTROPY_DATA`](#entropy_data) register without a request and requests are ignored.
 
-If the esfinal FIFO is not empty while firmware writes `kMultiBitBool4True` to this field, the field immediately sets back to `kMultiBitBool4False` and [`ENTROPY_DATA_VALID`](#entropy_data_valid) switches to `kMultiBitBool4True` to indicate that the seed can now be read from the [`ENTROPY_DATA`](#entropy_data) register.
+The field sets back to `kMultiBitBool4False` the cycle after it has been written.
+[`ENTROPY_DATA_VALID`](#entropy_data_valid) switches to `kMultiBitBool4True` to indicate that the seed can now be read from the [`ENTROPY_DATA`](#entropy_data) register.
 
 ## ENTROPY_DATA_VALID
 Entropy data valid register

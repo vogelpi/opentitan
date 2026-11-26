@@ -70,13 +70,14 @@ If firmware does not want to use hardware conditioning for the inserted entropy 
 1. Set the `FIPS_ENABLE` field in the [`CONF`](registers.md#conf) register to `kMultiBitBool4False`.
 In this case, the entropy can be routed to the hardware endpoints.
 1. Set `BYPASS_CONDITIONING` in [`ENTROPY_CONTROL`](registers.md#entropy_control) to `kMultiBitBool4True`.
-In this case, the unconditioned entropy is not routed to the hardware endpoints but only to the [`ENTROPY_DATA`](registers.md#entropy_data) register and only after firmware explicitly requests the routing of an entropy seed to the [`ENTROPY_DATA`](registers.md#entropy_data) register via the the [`ENTROPY_DATA_REQUEST`](registers.md#entropy_data_request) register.
+In this case, the unconditioned entropy is not routed to the hardware endpoints.
+Instead, a single seed is routed to the [`ENTROPY_DATA`](registers.md#entropy_data) register, without firmware having to request it via the [`ENTROPY_DATA_REQUEST`](registers.md#entropy_data_request) register.
 
 ### Hardware Conditioning Bypass
 
 Firmware can enable bypassing of the hardware conditioning inside the ENTROPY_SRC block.
 To this end, firmware has to either:
-- set the `BYPASS_CONDITIONING` in [`ENTROPY_CONTROL`](registers.md#entropy_control) to `kMultiBitBool4True` (this causes the ENTROPY_SRC block to not pass any entropy to the block hardware interface in FIPS/CC compliant mode), or
+- set the `BYPASS_CONDITIONING` in [`ENTROPY_CONTROL`](registers.md#entropy_control) to `kMultiBitBool4True` (this causes the ENTROPY_SRC block to not pass any entropy to the block hardware interface but to route a single seed to the [`ENTROPY_DATA`](registers.md#entropy_data) register), or
 - set the `FIPS_ENABLE` field in the [`CONF`](registers.md#conf) register to `kMultiBitBool4False` to disable FIPS mode and enable the bypass or boot-time mode.
 
 Note that in bypass or boot-time mode, health test window sizes other than 384 bits (the seed length) are currently not tested nor supported.
@@ -87,8 +88,9 @@ Firmware can read the entropy output of the ENTROPY_SRC block from the [`ENTROPY
 To this end, firmware has to:
 1. Set the `ENTROPY_DATA_REG_ENABLE` field in the [`ENTROPY_CONTROL`](registers.md#entropy_control) register to `kMultiBitBool4True`.
 1. Request the routing of a single seed to the [`ENTROPY_DATA`](registers.md#entropy_data) register by writing the [`ENTROPY_DATA_REQUEST`](registers.md#entropy_data_request) register to `kMultiBitBool4True`.
+   This step is not needed if `BYPASS_CONDITIONING` in [`ENTROPY_CONTROL`](registers.md#entropy_control) is `kMultiBitBool4True`.
 1. Wait for the [`ENTROPY_DATA_VALID`](registers.md#entropy_data_valid) register to read `kMultiBitBool4True`.
-1. Read the [`ENTROPY_DATA`](registers.md#entropy_data) register twelve times in order to cleanly evacuate the 384-bit seed from the hardware path (12 * 32 bits = 384 bits in total).
+1. Read the [`ENTROPY_DATA`](registers.md#entropy_data) register twelve times to retrieve the entire 384-bit seed (12 * 32 bits = 384 bits in total).
 
 Note that while firmware is retrieving the requested seed from the [`ENTROPY_DATA`](registers.md#entropy_data) register, the hardware can pass subsequent seeds to the block hardware interface.
 
