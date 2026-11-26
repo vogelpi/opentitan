@@ -343,6 +343,8 @@ module entropy_src_reg_top (
   logic recov_alert_sts_es_main_sm_alert_wd;
   logic recov_alert_sts_es_bus_cmp_alert_qs;
   logic recov_alert_sts_es_bus_cmp_alert_wd;
+  logic recov_alert_sts_es_illegal_request_alert_qs;
+  logic recov_alert_sts_es_illegal_request_alert_wd;
   logic recov_alert_sts_postht_entropy_drop_alert_qs;
   logic recov_alert_sts_postht_entropy_drop_alert_wd;
   logic err_code_sfifo_esrng_err_qs;
@@ -2775,6 +2777,34 @@ module entropy_src_reg_top (
     .qs     (recov_alert_sts_es_bus_cmp_alert_qs)
   );
 
+  //   F[es_illegal_request_alert]: 19:19
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_recov_alert_sts_es_illegal_request_alert (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (recov_alert_sts_we),
+    .wd     (recov_alert_sts_es_illegal_request_alert_wd),
+
+    // from internal hardware
+    .de     (hw2reg.recov_alert_sts.es_illegal_request_alert.de),
+    .d      (hw2reg.recov_alert_sts.es_illegal_request_alert.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (recov_alert_sts_es_illegal_request_alert_qs)
+  );
+
   //   F[postht_entropy_drop_alert]: 31:31
   prim_subreg #(
     .DW      (1),
@@ -3524,6 +3554,8 @@ module entropy_src_reg_top (
 
   assign recov_alert_sts_es_bus_cmp_alert_wd = reg_wdata[18];
 
+  assign recov_alert_sts_es_illegal_request_alert_wd = reg_wdata[19];
+
   assign recov_alert_sts_postht_entropy_drop_alert_wd = reg_wdata[31];
   assign err_code_test_we = addr_hit[51] & reg_we & !reg_error;
 
@@ -3842,6 +3874,7 @@ module entropy_src_reg_top (
         reg_rdata_next[16] = recov_alert_sts_es_fw_ov_disable_alert_qs;
         reg_rdata_next[17] = recov_alert_sts_es_main_sm_alert_qs;
         reg_rdata_next[18] = recov_alert_sts_es_bus_cmp_alert_qs;
+        reg_rdata_next[19] = recov_alert_sts_es_illegal_request_alert_qs;
         reg_rdata_next[31] = recov_alert_sts_postht_entropy_drop_alert_qs;
       end
 

@@ -168,7 +168,7 @@
     },
     { name:    "EsFifoDepth",
       type:    "int",
-      default: "3",
+      default: "2",
       desc:    "Number of 384-bit entries in the esfinal FIFO"
       local:   "true",
       expose:  "true"
@@ -1586,6 +1586,15 @@
           desc: '''
                 This bit is set when the internal entropy bus value is equal to the prior
                 valid value on the bus, indicating a possible attack.
+                Writing a zero resets this status bit.
+                '''
+        }
+        { bits: "19",
+          name: "ES_ILLEGAL_REQUEST_ALERT",
+          desc: '''
+                This bit is set when firmware writes `kMultiBitBool4True` to !!ENTROPY_DATA_REQUEST while the previous seed has not been entirely read from !!ENTROPY_DATA or while !!ENTROPY_CONTROL.ENTROPY_DATA_REG_ENABLE is not `kMultiBitBool4True`.
+                The request is ignored.
+                Requests written while !!ENTROPY_CONTROL.BYPASS_CONDITIONING is `kMultiBitBool4True` are ignored without setting this bit.
                 Writing a zero resets this status bit.
                 '''
         }

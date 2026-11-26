@@ -1218,18 +1218,19 @@ Debug status register
 Recoverable alert status register
 - Offset: `0xc4`
 - Reset default: `0x0`
-- Reset mask: `0x8007ffff`
+- Reset mask: `0x800fffff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "MODULE_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FIPS_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FIPS_FLAG_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "THRESHOLD_SCOPE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "RNG_FIPS_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "RNG_BIT_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ENTROPY_DATA_REG_EN_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "BYPASS_CONDITIONING_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ESFINAL_FIFO_CLEAR_WHILE_DISABLED_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ENTROPY_DATA_REQUEST_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "THRESHOLD_ONEWAY_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_THRESH_CFG_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FW_OV_MODE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FW_OV_ENTROPY_INSERT_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FW_OV_SHA3_START_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_FW_OV_WR_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_FW_OV_DISABLE_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_MAIN_SM_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_BUS_CMP_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 12}, {"name": "POSTHT_ENTROPY_DROP_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 470}}
+{"reg": [{"name": "MODULE_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FIPS_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FIPS_FLAG_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "THRESHOLD_SCOPE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "RNG_FIPS_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "RNG_BIT_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ENTROPY_DATA_REG_EN_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "BYPASS_CONDITIONING_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ESFINAL_FIFO_CLEAR_WHILE_DISABLED_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ENTROPY_DATA_REQUEST_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "THRESHOLD_ONEWAY_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_THRESH_CFG_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FW_OV_MODE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FW_OV_ENTROPY_INSERT_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FW_OV_SHA3_START_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_FW_OV_WR_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_FW_OV_DISABLE_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_MAIN_SM_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_BUS_CMP_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_ILLEGAL_REQUEST_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 11}, {"name": "POSTHT_ENTROPY_DROP_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 470}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                                                                                             |
 |:------:|:------:|:-------:|:-----------------------------------------------------------------------------------------------------------------|
 |   31   |  rw0c  |   0x0   | [POSTHT_ENTROPY_DROP_ALERT](#recov_alert_sts--postht_entropy_drop_alert)                                         |
-| 30:19  |        |         | Reserved                                                                                                         |
+| 30:20  |        |         | Reserved                                                                                                         |
+|   19   |  rw0c  |   0x0   | [ES_ILLEGAL_REQUEST_ALERT](#recov_alert_sts--es_illegal_request_alert)                                           |
 |   18   |  rw0c  |   0x0   | [ES_BUS_CMP_ALERT](#recov_alert_sts--es_bus_cmp_alert)                                                           |
 |   17   |  rw0c  |   0x0   | [ES_MAIN_SM_ALERT](#recov_alert_sts--es_main_sm_alert)                                                           |
 |   16   |  rw0c  |   0x0   | [ES_FW_OV_DISABLE_ALERT](#recov_alert_sts--es_fw_ov_disable_alert)                                               |
@@ -1261,6 +1262,12 @@ But as the dropped bits are still tested, the effective test window increases be
 
 Software should check this bit when running in Firmware Override: Observe mode as dropping post-health test entropy bits in this mode may cause the entropy bits observed from the Observe FIFO to be non-contiguous.
 
+Writing a zero resets this status bit.
+
+### RECOV_ALERT_STS . ES_ILLEGAL_REQUEST_ALERT
+This bit is set when firmware writes `kMultiBitBool4True` to [`ENTROPY_DATA_REQUEST`](#entropy_data_request) while the previous seed has not been entirely read from [`ENTROPY_DATA`](#entropy_data) or while [`ENTROPY_CONTROL.ENTROPY_DATA_REG_ENABLE`](#entropy_control) is not `kMultiBitBool4True`.
+The request is ignored.
+Requests written while [`ENTROPY_CONTROL.BYPASS_CONDITIONING`](#entropy_control) is `kMultiBitBool4True` are ignored without setting this bit.
 Writing a zero resets this status bit.
 
 ### RECOV_ALERT_STS . ES_BUS_CMP_ALERT
